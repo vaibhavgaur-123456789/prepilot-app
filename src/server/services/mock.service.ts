@@ -82,7 +82,7 @@ export async function submitAttempt(userId: string, attemptId: string, finalAnsw
     include: { mock: { include: { exam: true, questions: { include: { question: { include: { topic: { include: { subject: true } } } } } } } } },
   });
   if (!attempt || attempt.userId !== userId) throw notFound("Attempt");
-  if (attempt.status === "SUBMITTED") return getResult(userId, attemptId);
+  if (attempt.status === "SUBMITTED") return { ...(await getResult(userId, attemptId)), xp: [], achievements: [], weakFlagged: [] as string[], xpWithheld: null };
 
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { profile: true } });
   const answers = { ...parseJson<Record<string, MockAnswer>>(attempt.answers, {}), ...finalAnswers };

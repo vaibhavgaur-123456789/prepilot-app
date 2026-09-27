@@ -2,6 +2,11 @@
 
 Status legend: ✅ done · 🟡 partial (see notes) · ⏳ not started
 
+## Current status (2026-09-27)
+✅ Phase 1 complete · ✅ Phase 2 complete · ✅ Phase 3 benchmarking, admin, privacy and PWA/offline.
+Quality gates: typecheck ✅ · lint ✅ · 68 tests ✅ (engines, full user journey, recovery mode, anti-gaming, notifications, privacy, benchmarks) · production build ✅ · verified in a browser (desktop + mobile).
+Remaining: see README → Known limitations.
+
 ## Environment notes (this machine)
 - Node v24 LTS and MinGit were installed **portably** in `%LOCALAPPDATA%\Programs` (no admin rights), and both were added to the user PATH.
 - No local Postgres, so dev uses SQLite (see DATABASE_SCHEMA.md → Moving to PostgreSQL).

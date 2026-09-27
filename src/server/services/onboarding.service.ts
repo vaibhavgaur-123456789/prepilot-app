@@ -73,7 +73,8 @@ export async function completeOnboarding(userId: string, input: OnboardingInput,
 
   // Capacity and the recommended hours.
   const remainingMinutes = leaves.reduce((s, t) => s + (completed.includes(t.id) ? 0 : inProgress.includes(t.id) ? t.estimatedMinutes * 0.6 : t.estimatedMinutes), 0);
-  const practiceFactor = 1.6; // first-pass study + practice + revision
+  // Topic estimates cover first-pass learning only; practice sets, spaced revision and mocks roughly triple that.
+  const practiceFactor = 3;
   const learningDays = Math.max(1, Math.floor(daysLeft * 0.85));
   const recommendedDailyMinutes = Math.min(600, Math.max(60, Math.round((remainingMinutes * practiceFactor) / learningDays / 15) * 15));
   const ratio = input.dailyMinutes / recommendedDailyMinutes;

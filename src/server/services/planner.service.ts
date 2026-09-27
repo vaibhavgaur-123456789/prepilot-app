@@ -231,7 +231,9 @@ export async function ensureDayPlan(userId: string, opts: EnsurePlanOptions = {}
 
   const pace = await paceFor(ctx, now);
   const hasMockToday = kept.length > 0 && (await prisma.task.count({ where: { userId, date, type: "MOCK" } })) > 0;
-  const mock = !hasMockToday && pace.mockDueToday && !recovery.active ? await pickMock(userId, ctx.exam.id, capacity, ctx.exam.durationMinutes) : null;
+  // No full mocks in the first week for a fresh start: the baseline diagnostic covers that, and the student needs study time first.
+  const settlingIn = diffDays(dayKey(ctx.profile.createdAt, ctx.tz), date) < 7 && !(await prisma.mockAttempt.count({ where: { userId, status: "SUBMITTED", mock: { type: { in: ["FULL", "SECTIONAL"] } } } }));
+  const mock = !hasMockToday && pace.mockDueToday && !recovery.active && !settlingIn ? await pickMock(userId, ctx.exam.id, capacity, ctx.exam.durationMinutes) : null;
   const pendingAnalysis = await prisma.mockAttempt.findFirst({
     where: { userId, status: "SUBMITTED", analyzedAt: null, mock: { type: { not: "DIAGNOSTIC" } } },
     include: { mock: true },

@@ -9,8 +9,10 @@ export async function awardXp(userId: string, date: string, awards: XpAward[]): 
   const created: XpAward[] = [];
   for (const a of awards) {
     if (a.amount <= 0) continue;
+    const dedupeKey = `${userId}:${a.dedupeKey}`;
+    if (await prisma.xpEvent.findUnique({ where: { dedupeKey }, select: { id: true } })) continue;
     try {
-      await prisma.xpEvent.create({ data: { userId, date, type: a.type, amount: a.amount, reason: a.reason, dedupeKey: `${userId}:${a.dedupeKey}` } });
+      await prisma.xpEvent.create({ data: { userId, date, type: a.type, amount: a.amount, reason: a.reason, dedupeKey } });
       created.push(a);
     } catch (e) {
       if (!isUniqueViolation(e)) throw e;

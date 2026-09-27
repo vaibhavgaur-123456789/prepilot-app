@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrepPilot
 
-## Getting Started
+An exam-preparation operating system for SSC, Railway, Banking and similar objective exams.
+It measures **PLAN vs ACTION vs RESULT** and adapts the next plan from the gap.
 
-First, run the development server:
+Docs: [PRODUCT_SPEC](PRODUCT_SPEC.md) · [ARCHITECTURE](ARCHITECTURE.md) · [DATABASE_SCHEMA](DATABASE_SCHEMA.md) · [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md)
+
+## Run it locally
+
+Requirements: Node.js 20+ (tested on 24).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env        # then set AUTH_SECRET (see the comment in the file)
+npm run setup               # creates the SQLite DB, loads exams/questions + demo accounts
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Demo accounts (development only, created by `prisma/seed-data/demo.ts`):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Role | Email | Password |
+|---|---|---|
+| Student with 3 weeks of simulated history | `demo@preppilot.app` | `demo-pass-2026` |
+| Admin | `admin@preppilot.app` | `admin-pass-2026` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Or sign up with any email to go through onboarding from scratch.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` / `npm start` | Production build / serve |
+| `npm test` | All tests (engines + DB integration on a throwaway SQLite file) |
+| `npm run test:unit` | Engine unit tests only (fast, no DB) |
+| `npm run typecheck` · `npm run lint` | Static checks |
+| `npm run check` | typecheck + lint + test + build |
+| `npm run db:seed` | Re-run the seed (idempotent: skips existing exams and demo users) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Optional configuration (`.env`)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **AI coach**: set `ANTHROPIC_API_KEY` (model defaults to `claude-opus-5`, with server-side refusal fallbacks). Without a key, the coach still answers from your data using its built-in rule engine.
+- **Google login**: set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` with redirect URI `{APP_URL}/api/v1/auth/google/callback`. The button is hidden when these are unset.
+- **Scheduled jobs**: set `CRON_SECRET`, then call `POST /api/v1/cron/notifications` and `POST /api/v1/cron/benchmarks` with `Authorization: Bearer <CRON_SECRET>` from any scheduler.
+- **Admins**: emails in `ADMIN_EMAILS` get the admin role on signup.
+- **Premium gates**: `PREMIUM_GATING=on` enforces free/premium features (off by default). Basic study, safety and privacy features are never gated.
 
-## Deploy on Vercel
+## Production
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Switch Prisma to PostgreSQL (see DATABASE_SCHEMA.md → *Moving to PostgreSQL*), set `DATABASE_URL`, `AUTH_SECRET` and `APP_URL`, then run `npm run db:deploy && npm run build && npm start`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Known limitations
+
+- Push notifications to a closed app need Web Push (VAPID) keys, which aren't implemented. Notifications are in-app and generated on visit or by the cron job.
+- The Hindi interface isn't translated yet (the language preference is stored).
+- Payments aren't integrated (the Subscription table and entitlement gates exist).
+- Mentor features, study groups and a content marketplace are not built.
+- Seeded benchmark values are **reference** values and are always labelled "illustrative". Real aggregates appear only once 20+ opted-in students exist per exam.

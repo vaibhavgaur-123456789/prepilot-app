@@ -151,7 +151,11 @@ export async function completeSession(userId: string, input: SessionCompleteInpu
   await trackEvent(userId, "session_complete", { minutes: activeMinutes, validated: v.validated });
 
   const planned = stat.plannedMinutes;
-  const message = planned > 0 ? completionMessage((stat.actualMinutes / planned) * 100) : `${activeMinutes} focused minutes logged.`;
+  const dayPct = planned > 0 ? Math.min(100, Math.round((stat.actualMinutes / planned) * 100)) : 0;
+  const message =
+    planned === 0 ? `${activeMinutes} focused minutes logged.`
+    : dayPct >= 100 ? completionMessage(100)
+    : `${activeMinutes} focused minutes logged. ${dayPct}% of today's plan done so far.`;
   return { session, xp, flags: v.flags, message, achievements, weakFlagged, pathwayMessage, duplicate: false };
 }
 
