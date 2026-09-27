@@ -79,7 +79,10 @@ Har complaint **Admin → Complaints** mein hamesha aati hai. Email pe bhi chahi
 2. Vercel mein `ANTHROPIC_API_KEY` daalein → Redeploy.
 Key ke bina bhi coach chalta hai (built-in, aapke data se jawab deta hai).
 
-## Step 8: Notifications har ghante (recommended, free)
+## Step 8: Notifications har ghante (✅ ho chuka: Supabase scheduler)
+> PrepPilot ke liye ye Supabase mein **pg_cron** se laga diya gaya hai. Alarm har 5 minute check hote hain aur reminders har ghante jaate hain. Dekhne/band karne ke liye: Supabase → **Database → Cron Jobs**. Neeche wala tareeka sirf tab chahiye jab Supabase ke bina chalana ho.
+
+### Doosra tareeka: cron-job.org
 Vercel ka free plan din mein sirf ek baar cron chalata hai (subah ~7 baje ka briefing). Har ghante ke reminders ke liye:
 1. https://cron-job.org → free account → **Create cronjob**.
 2. URL: `https://aapka-link/api/v1/cron/notifications`, schedule: **every hour**.

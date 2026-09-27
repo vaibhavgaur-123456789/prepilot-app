@@ -9,6 +9,8 @@ Read this first. The owner is not a programmer and usually writes in Hinglish (H
 - Code: https://github.com/vaibhavgaur-123456789/prepilot-app
 - Database: Supabase Postgres (Mumbai). Production env vars are in Vercel, with a local copy in the gitignored `.env.vercel`.
 - Owner/admin email: set in the `ADMIN_EMAILS` env var.
+- Scheduler: Supabase `pg_cron` + `pg_net` jobs `preppilot-alarms` (every 5 min → `/api/v1/cron/alarms`) and `preppilot-notifications` (hourly). Both send `Authorization: Bearer $CRON_SECRET`. If CRON_SECRET or the domain changes, re-create both jobs (`select cron.schedule(...)` replaces a job by name). View them in Supabase → Database → Cron Jobs.
+- Server region: `bom1` (Mumbai, set in vercel.json), next to the Supabase database.
 
 ## What this is
 PrepPilot is a competitive-exam preparation app (SSC, Railway, Banking and others) for Indian students. It is mobile-first and installable as a PWA.
