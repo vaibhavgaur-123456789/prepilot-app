@@ -4,6 +4,12 @@
 
 Read this first. The owner is not a programmer and usually writes in Hinglish (Hindi + English). Reply in simple Hinglish, explain what you changed in plain words, and never assume they can debug code themselves.
 
+## Where it runs
+- Live: https://prepilot-app.vercel.app (Vercel project `prepilot-app`, auto-deploys from `main`)
+- Code: https://github.com/vaibhavgaur-123456789/prepilot-app
+- Database: Supabase Postgres (Mumbai). Production env vars are in Vercel, with a local copy in the gitignored `.env.vercel`.
+- Owner/admin email: set in the `ADMIN_EMAILS` env var.
+
 ## What this is
 PrepPilot is a competitive-exam preparation app (SSC, Railway, Banking and others) for Indian students. It is mobile-first and installable as a PWA.
 Core idea: measure **PLAN vs ACTUAL vs RESULT** and adapt the next day's plan from the gap.
