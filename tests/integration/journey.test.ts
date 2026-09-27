@@ -81,7 +81,7 @@ describe("core journey", () => {
 
   it("rejects impossible manual edits", async () => {
     await expect(updateTask(userId, firstTaskId, { plannedMinutes: 240, startTime: "23:00" })).rejects.toThrow();
-    await expect(addTask(userId, { date: dayKey(NOW), title: "Marathon", type: "CUSTOM", plannedMinutes: 240, questionTarget: 0, objective: "" })).rejects.toThrow(/available/);
+    await expect(addTask(userId, { date: dayKey(NOW), title: "Marathon", type: "CUSTOM", plannedMinutes: 170, questionTarget: 0, objective: "" })).rejects.toThrow(/available/);
     const plan = await getDayPlan(userId, dayKey(NOW));
     const ids = plan.tasks.map((t) => t.id).reverse();
     await reorderTasks(userId, dayKey(NOW), ids, NOW);
