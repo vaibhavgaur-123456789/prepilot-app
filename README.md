@@ -49,10 +49,18 @@ Or sign up with any email to go through onboarding from scratch.
 
 Switch Prisma to PostgreSQL (see DATABASE_SCHEMA.md → *Moving to PostgreSQL*), set `DATABASE_URL`, `AUTH_SECRET` and `APP_URL`, then run `npm run db:deploy && npm run build && npm start`.
 
+**Going live:** see [DEPLOY.md](DEPLOY.md) (Vercel + Supabase, step by step, in Hinglish).
+
+## Also included
+
+- **Hindi interface:** EN | हिं switch in the header, on sign-in pages and in Profile. Navigation, Home, Plan, Study, focus timer, test player, settings and sign-in are translated (`src/i18n/dict.ts`).
+- **Push notifications (Web Push):** students turn them on per device in Profile → Notifications. Needs the `VAPID_*` keys.
+- **Report a problem:** a flag button in the header (and on sign-in pages). Reports go to Admin → Complaints, and by email if `RESEND_API_KEY` is set. Students get a notification when their report is resolved.
+- `npm run make-admin -- email` gives an existing account the admin role.
+
 ## Known limitations
 
-- Push notifications to a closed app need Web Push (VAPID) keys, which aren't implemented. Notifications are in-app and generated on visit or by the cron job.
-- The Hindi interface isn't translated yet (the language preference is stored).
+- Engine-generated explanations (task reasons, insights, coach answers) are still in English. Analytics and some deeper screens are partly English.
 - Payments aren't integrated (the Subscription table and entitlement gates exist).
 - Mentor features, study groups and a content marketplace are not built.
 - Seeded benchmark values are **reference** values and are always labelled "illustrative". Real aggregates appear only once 20+ opted-in students exist per exam.

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listExamsAdmin, productMetrics, recentAudit } from "@/server/services/admin.service";
+import { openFeedbackCount } from "@/server/services/feedback.service";
 import { Badge, Card, CardTitle, PageHeader, Stat } from "@/components/ui";
 
 export const metadata = { title: "Admin" };
@@ -7,10 +8,16 @@ export const metadata = { title: "Admin" };
 const v = (x: number | null, suffix = "") => (x === null ? "–" : `${x}${suffix}`);
 
 export default async function AdminPage() {
-  const [m, exams, audit] = await Promise.all([productMetrics(), listExamsAdmin(), recentAudit()]);
+  const [m, exams, audit, openReports] = await Promise.all([productMetrics(), listExamsAdmin(), recentAudit(), openFeedbackCount()]);
   return (
     <div className="space-y-4">
-      <PageHeader title="Admin" subtitle="Content and product health. Individual student data is never shown here." />
+      <PageHeader title="Admin" subtitle="Content and product health. Individual study data is never shown here." />
+      <Link href="/admin/feedback" className="block">
+        <Card className={openReports ? "border-danger/40 bg-danger-soft" : ""}>
+          <p className="font-semibold">📮 Complaints & feedback: {openReports} open</p>
+          <p className="text-sm text-muted">Reports from the “Report a problem” button. Tap to respond.</p>
+        </Card>
+      </Link>
       <Card>
         <CardTitle>North star: is measured preparation improving?</CardTitle>
         <p className="tabular text-3xl font-bold">{v(m.northStar.improvingPct, "%")}</p>

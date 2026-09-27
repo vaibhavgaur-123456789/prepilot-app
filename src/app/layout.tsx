@@ -3,6 +3,8 @@ import "./globals.css";
 import { BRAND } from "@/config/brand";
 import { getCurrentUser } from "@/server/auth/guards";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { I18nProvider } from "@/i18n/client";
+import { getLang } from "@/i18n/server";
 
 export const metadata: Metadata = {
   title: { default: BRAND.name, template: `%s · ${BRAND.name}` },
@@ -23,10 +25,11 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser().catch(() => null);
   const theme = user?.theme && user.theme !== "system" ? user.theme : undefined;
+  const lang = await getLang();
   return (
-    <html lang={user?.language ?? "en"} data-theme={theme} suppressHydrationWarning>
+    <html lang={lang} data-theme={theme} suppressHydrationWarning>
       <body className="min-h-dvh">
-        {children}
+        <I18nProvider lang={lang}>{children}</I18nProvider>
         <ServiceWorker />
       </body>
     </html>

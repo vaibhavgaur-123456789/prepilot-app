@@ -55,6 +55,40 @@ model User {
   conversations     AIConversation[]
   events            ProductEvent[]
   subscriptions     Subscription[]
+  feedback          Feedback[]
+  pushSubscriptions PushSubscription[]
+}
+
+/// A problem report / complaint / suggestion from a student. Reaches the admin inbox (and email if configured).
+model Feedback {
+  id         String    @id @default(cuid())
+  userId     String?
+  category   String    // BUG | CONTENT_ERROR | SUGGESTION | ACCOUNT | OTHER
+  message    String
+  page       String?   // where in the app it was sent from
+  contact    String?   // email to reply to (defaults to the account email)
+  userAgent  String?
+  status     String    @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED
+  adminNote  String    @default("")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+}
+
+/// Browser push endpoint for a device (Web Push / VAPID).
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model AuthSession {

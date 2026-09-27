@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# generated production schema (scripts/prisma-postgres.mjs)
+/prisma/postgres/
+
 # local sqlite databases
 /prisma/*.db
 /prisma/*.db-journal

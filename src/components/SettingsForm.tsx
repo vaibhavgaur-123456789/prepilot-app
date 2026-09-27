@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/client/api";
 import { formatMinutes } from "@/lib/engine/dates";
 import { Alert, Button, Card, CardTitle, cx, inputClass } from "./ui";
+import { PushToggle } from "./PushToggle";
+import { setLangCookie, useLang, useT } from "@/i18n/client";
+import { LANGS } from "@/i18n/dict";
 
 type Profile = { name: string; timezone: string; theme: string; examDate: string; dailyMinutes: number; preferredBlockMin: number; preferredSlots: string[]; benchmarkOptIn: boolean; hasPassword: boolean };
 type Prefs = { enabled: boolean; studyReminder: boolean; revisionReminder: boolean; mockReminder: boolean; missedTask: boolean; examCountdown: boolean; dailyBriefing: boolean; weeklyReview: boolean; quietStart: string; quietEnd: string; maxPerDay: number };
@@ -21,8 +24,10 @@ function Toggle({ checked, onChange, label, hint }: { checked: boolean; onChange
   );
 }
 
-export function SettingsForm({ profile, prefs: initialPrefs }: { profile: Profile; prefs: Prefs }) {
+export function SettingsForm({ profile, prefs: initialPrefs, vapidKey }: { profile: Profile; prefs: Prefs; vapidKey: string | null }) {
   const router = useRouter();
+  const t = useT();
+  const lang = useLang();
   const [p, setP] = useState(profile);
   const [prefs, setPrefs] = useState(initialPrefs);
   const [msg, setMsg] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
@@ -67,8 +72,13 @@ export function SettingsForm({ profile, prefs: initialPrefs }: { profile: Profil
     <>
       {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}
       <Card>
-        <CardTitle>Study settings</CardTitle>
+        <CardTitle>{t("settings.study")}</CardTitle>
         <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block sm:col-span-2"><span className="mb-1 block text-sm font-medium">{t("settings.language")} / भाषा</span>
+            <select className={inputClass} value={lang} onChange={(e) => { setLangCookie(e.target.value); save({ profile: { language: e.target.value } }, "✓"); }}>
+              {LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
+            </select>
+          </label>
           <label className="block"><span className="mb-1 block text-sm font-medium">Name</span><input className={inputClass} value={p.name} onChange={(e) => setP({ ...p, name: e.target.value })} /></label>
           <label className="block"><span className="mb-1 block text-sm font-medium">Exam date</span><input type="date" className={inputClass} value={p.examDate} onChange={(e) => setP({ ...p, examDate: e.target.value })} /></label>
           <label className="block"><span className="mb-1 block text-sm font-medium">Available per day: {formatMinutes(p.dailyMinutes)}</span><input type="range" min={30} max={600} step={15} value={p.dailyMinutes} onChange={(e) => setP({ ...p, dailyMinutes: Number(e.target.value) })} className="w-full accent-[var(--primary)]" /></label>
@@ -86,11 +96,12 @@ export function SettingsForm({ profile, prefs: initialPrefs }: { profile: Profil
             ))}
           </div>
         </fieldset>
-        <Button className="mt-4" disabled={busy || p.preferredSlots.length === 0} onClick={() => save({ profile: { name: p.name, examDate: p.examDate, dailyMinutes: p.dailyMinutes, preferredBlockMin: p.preferredBlockMin, timezone: p.timezone, theme: p.theme, preferredSlots: p.preferredSlots } }, "Saved. Tomorrow's plan will use these settings (Re-plan to apply today).")}>Save settings</Button>
+        <Button className="mt-4" disabled={busy || p.preferredSlots.length === 0} onClick={() => save({ profile: { name: p.name, examDate: p.examDate, dailyMinutes: p.dailyMinutes, preferredBlockMin: p.preferredBlockMin, timezone: p.timezone, theme: p.theme, preferredSlots: p.preferredSlots } }, "Saved. Tomorrow's plan will use these settings (Re-plan to apply today).")}>{t("settings.saveSettings")}</Button>
       </Card>
 
       <Card>
-        <CardTitle>Notifications</CardTitle>
+        <CardTitle>{t("settings.notifications")}</CardTitle>
+        <div className="mb-3"><PushToggle publicKey={vapidKey} /></div>
         <Toggle checked={prefs.enabled} onChange={(v) => setPrefs({ ...prefs, enabled: v })} label="All notifications" hint="Turn everything off with one switch." />
         <div className={cx("divide-y divide-border", !prefs.enabled && "pointer-events-none opacity-50")}>
           {PREF_LABELS.map(([k, l]) => <Toggle key={k} checked={prefs[k] as boolean} onChange={(v) => setPrefs({ ...prefs, [k]: v })} label={l} />)}
@@ -100,15 +111,15 @@ export function SettingsForm({ profile, prefs: initialPrefs }: { profile: Profil
             <label className="block"><span className="mb-1 block text-xs font-medium">Max per day</span><input type="number" min={0} max={10} className={inputClass} value={prefs.maxPerDay} onChange={(e) => setPrefs({ ...prefs, maxPerDay: Number(e.target.value) })} /></label>
           </div>
         </div>
-        <Button className="mt-2" disabled={busy} onClick={() => { const { enabled, studyReminder, revisionReminder, mockReminder, missedTask, examCountdown, dailyBriefing, weeklyReview, quietStart, quietEnd, maxPerDay } = prefs; save({ notifications: { enabled, studyReminder, revisionReminder, mockReminder, missedTask, examCountdown, dailyBriefing, weeklyReview, quietStart, quietEnd, maxPerDay } }); }}>Save notifications</Button>
+        <Button className="mt-2" disabled={busy} onClick={() => { const { enabled, studyReminder, revisionReminder, mockReminder, missedTask, examCountdown, dailyBriefing, weeklyReview, quietStart, quietEnd, maxPerDay } = prefs; save({ notifications: { enabled, studyReminder, revisionReminder, mockReminder, missedTask, examCountdown, dailyBriefing, weeklyReview, quietStart, quietEnd, maxPerDay } }); }}>{t("settings.saveNotifications")}</Button>
       </Card>
 
       <Card>
-        <CardTitle>Privacy & data</CardTitle>
+        <CardTitle>{t("settings.privacy")}</CardTitle>
         <Toggle checked={p.benchmarkOptIn} onChange={(v) => { setP({ ...p, benchmarkOptIn: v }); save({ profile: { benchmarkOptIn: v } }, v ? "Benchmarking on." : "Opted out. You're excluded from future aggregates immediately."); }} label="Anonymous benchmarking" hint="Your anonymized stats count toward group medians (published only for 20+ students), and you see comparisons. Your individual data is never shown to anyone." />
         <div className="mt-3 flex flex-wrap gap-2">
-          <a href="/api/v1/profile" className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-semibold hover:bg-surface-2">Download my data (JSON)</a>
-          <Button variant="secondary" onClick={logout}>Sign out</Button>
+          <a href="/api/v1/profile" className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-semibold hover:bg-surface-2">{t("settings.download")}</a>
+          <Button variant="secondary" onClick={logout}>{t("settings.signOut")}</Button>
         </div>
         <details className="mt-4 rounded-xl border border-danger/40 p-3">
           <summary className="cursor-pointer text-sm font-semibold text-danger">Delete account</summary>

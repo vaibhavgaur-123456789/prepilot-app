@@ -10,11 +10,34 @@ self.addEventListener("activate", (e) => {
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
+// Push notifications (Web Push).
+self.addEventListener("push", (e) => {
+  let data = { title: "PrepPilot", body: "", href: "/" };
+  try {
+    data = { ...data, ...e.data.json() };
+  } catch {
+    /* plain text or empty push */
+  }
+  e.waitUntil(self.registration.showNotification(data.title, { body: data.body, icon: "/icon.svg", badge: "/icon.svg", tag: data.tag, data: { href: data.href } }));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const href = (e.notification.data && e.notification.data.href) || "/";
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) if ("focus" in c) return c.navigate(href).then((w) => (w || c).focus());
+      return self.clients.openWindow(href);
+    }),
+  );
+});
+
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return; // mutations go through the in-app outbox
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  if (self.location.hostname === "localhost") return; // no caching during local development
 
   // Static assets: cache-first.
   if (url.pathname.startsWith("/_next/static/") || url.pathname === "/icon.svg") {

@@ -10,6 +10,7 @@ import { apiFetch, ApiError } from "@/lib/client/api";
 import { formatMinutes, toHHMM, toMinutes } from "@/lib/engine/dates";
 import { Alert, Badge, Button, Card, CardTitle, cx, inputClass, PageHeader, Progress } from "./ui";
 import { GripIcon, PlayIcon, PlusIcon, RefreshIcon } from "./icons";
+import { useT } from "@/i18n/client";
 
 type Task = {
   id: string; type: string; title: string; mockId: string | null; startTime: string | null; plannedMinutes: number; questionTarget: number; objective: string; status: string;
@@ -77,6 +78,7 @@ function Row({ t, onEdit, onSkip }: { t: Task; onEdit: () => void; onSkip: () =>
 
 export function PlanBoard({ initial, week, topics, capacity, recovery }: { initial: Plan; week: Week; topics: { id: string; name: string }[]; capacity: number; recovery: { on: boolean; manual: boolean } }) {
   const router = useRouter();
+  const t = useT();
   const [plan, setPlan] = useState(initial);
   const [msg, setMsg] = useState<{ tone: "danger" | "warning" | "success"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -118,12 +120,12 @@ export function PlanBoard({ initial, week, topics, capacity, recovery }: { initi
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Today's plan"
+        title={t("plan.title")}
         subtitle={`${new Date(`${plan.date}T12:00:00`).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })} · ${formatMinutes(planned)} planned of ${formatMinutes(capacity)} available`}
         action={
           <div className="flex gap-2">
-            <Button variant="secondary" disabled={busy} onClick={() => setAdding(true)}><PlusIcon width={18} height={18} /> Add</Button>
-            <Button variant="secondary" disabled={busy} onClick={() => run(() => apiFetch("/api/v1/plan", { method: "POST", body: { action: "regenerate" } }), "Unstarted blocks re-planned from your latest data.")}><RefreshIcon width={18} height={18} /> Re-plan</Button>
+            <Button variant="secondary" disabled={busy} onClick={() => setAdding(true)}><PlusIcon width={18} height={18} /> {t("common.add")}</Button>
+            <Button variant="secondary" disabled={busy} onClick={() => run(() => apiFetch("/api/v1/plan", { method: "POST", body: { action: "regenerate" } }), "Unstarted blocks re-planned from your latest data.")}><RefreshIcon width={18} height={18} /> {t("plan.replan")}</Button>
           </div>
         }
       />
@@ -131,7 +133,7 @@ export function PlanBoard({ initial, week, topics, capacity, recovery }: { initi
       {plan.planDay?.mode === "RECOVERY" && <Alert tone="warning" title="Recovery mode is on">You are behind your original plan. We will not try to complete everything at once. Only high-value, weak and revision-due work is planned. It ends after 3 days at 70%+ completion.</Alert>}
       {(plan.planDay?.notes.length ?? 0) > 0 && (
         <Card className="bg-primary-soft">
-          <p className="text-sm font-semibold">How today was adapted</p>
+          <p className="text-sm font-semibold">{t("plan.adapted")}</p>
           <ul className="mt-1 list-inside list-disc text-sm">{plan.planDay!.notes.filter((n) => !n.startsWith("You are behind")).map((n) => <li key={n}>{n}</li>)}</ul>
         </Card>
       )}
@@ -156,7 +158,7 @@ export function PlanBoard({ initial, week, topics, capacity, recovery }: { initi
 
       {plan.backlog.length > 0 && (
         <Card>
-          <CardTitle>Unfinished work: nothing is silently dropped</CardTitle>
+          <CardTitle>{t("plan.unfinished")}</CardTitle>
           <ul className="divide-y divide-border">
             {plan.backlog.map((b) => (
               <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
@@ -177,12 +179,12 @@ export function PlanBoard({ initial, week, topics, capacity, recovery }: { initi
       )}
 
       <Card>
-        <CardTitle action={<Button variant="ghost" disabled={busy} onClick={() => run(() => apiFetch("/api/v1/plan", { method: "POST", body: { action: "recovery", on: !recovery.on } }), recovery.on ? "Recovery mode off." : "Recovery mode on: today is re-planned around essentials.")}>{recovery.on ? "Turn off" : "Turn on"}</Button>}>Recovery mode</CardTitle>
-        <p className="text-sm text-muted">Switches automatically when several days fall below 50%. Turn it on yourself if you know a busy stretch is coming.</p>
+        <CardTitle action={<Button variant="ghost" disabled={busy} onClick={() => run(() => apiFetch("/api/v1/plan", { method: "POST", body: { action: "recovery", on: !recovery.on } }), recovery.on ? "Recovery mode off." : "Recovery mode on: today is re-planned around essentials.")}>{recovery.on ? t("plan.turnOff") : t("plan.turnOn")}</Button>}>{t("plan.recovery")}</CardTitle>
+        <p className="text-sm text-muted">{t("plan.recoveryHint")}</p>
       </Card>
 
       <Card>
-        <CardTitle>Coming days</CardTitle>
+        <CardTitle>{t("plan.comingDays")}</CardTitle>
         <p className="mb-3 text-xs text-muted">{week.note}</p>
         <ol className="grid gap-2 sm:grid-cols-2">
           {week.days.map((d) => (

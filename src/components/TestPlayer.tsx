@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/client/api";
 import { fmtClock } from "@/lib/client/timer-store";
 import { Alert, Button, cx } from "./ui";
+import { useT } from "@/i18n/client";
 
 type Q = { id: string; stem: string; options: string[]; subject: string; topic: string; marks: number };
 type Ans = { selected: number | null; timeSpentSec: number; confidence: "LOW" | "MEDIUM" | "HIGH" | null };
@@ -12,6 +13,7 @@ type Attempt = { id: string; startedAt: string; deadline: string; mock: { title:
 
 export function TestPlayer({ attempt }: { attempt: Attempt }) {
   const router = useRouter();
+  const t = useT();
   const storageKey = `pp_attempt_${attempt.id}`;
   const [answers, setAnswers] = useState<Record<string, Ans>>(() => {
     try {
@@ -134,7 +136,7 @@ export function TestPlayer({ attempt }: { attempt: Attempt }) {
       <header className="sticky top-0 z-10 -mx-4 mb-3 flex items-center justify-between border-b border-border bg-bg px-4 py-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{attempt.mock.title}</p>
-          <p className="text-xs text-muted">{answered}/{attempt.questions.length} answered</p>
+          <p className="text-xs text-muted">{t("test.answered", { a: answered, b: attempt.questions.length })}</p>
         </div>
         <p role="timer" aria-label="Time left" className={cx("tabular rounded-xl px-3 py-1.5 text-lg font-bold", left < 5 * 60_000 ? "bg-danger-soft text-danger" : "bg-surface-2")}>{fmtClock(left)}</p>
       </header>
@@ -152,11 +154,11 @@ export function TestPlayer({ attempt }: { attempt: Attempt }) {
           ))}
         </div>
         <fieldset className="mt-4">
-          <legend className="mb-1 text-xs font-medium text-muted">How sure are you? (helps detect overconfidence)</legend>
+          <legend className="mb-1 text-xs font-medium text-muted">{t("test.sure")}</legend>
           <div className="flex gap-2">
             {(["LOW", "MEDIUM", "HIGH"] as const).map((c) => (
               <button key={c} type="button" aria-pressed={a?.confidence === c} onClick={() => setConfidence(c)} className={cx("min-h-10 flex-1 rounded-xl border text-xs font-semibold", a?.confidence === c ? "border-primary bg-primary-soft text-primary" : "border-border")}>
-                {c === "LOW" ? "Guessing" : c === "MEDIUM" ? "Fairly sure" : "Certain"}
+                {c === "LOW" ? t("test.guessing") : c === "MEDIUM" ? t("test.fairly") : t("test.certain")}
               </button>
             ))}
           </div>
@@ -165,9 +167,9 @@ export function TestPlayer({ attempt }: { attempt: Attempt }) {
 
       <div className="mt-6 space-y-3">
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => go(i - 1)} disabled={i === 0}>← Prev</Button>
-          <Button variant="secondary" onClick={() => setMarked((m) => { const n = new Set(m); if (n.has(q.id)) n.delete(q.id); else n.add(q.id); return n; })}>{marked.has(q.id) ? "Unmark" : "Mark for review"}</Button>
-          {i < attempt.questions.length - 1 ? <Button className="flex-1" onClick={() => go(i + 1)}>Next →</Button> : <Button className="flex-1" onClick={() => setConfirm(true)}>Finish</Button>}
+          <Button variant="secondary" onClick={() => go(i - 1)} disabled={i === 0}>{t("test.prev")}</Button>
+          <Button variant="secondary" onClick={() => setMarked((m) => { const n = new Set(m); if (n.has(q.id)) n.delete(q.id); else n.add(q.id); return n; })}>{marked.has(q.id) ? t("test.unmark") : t("test.mark")}</Button>
+          {i < attempt.questions.length - 1 ? <Button className="flex-1" onClick={() => go(i + 1)}>{t("test.next")}</Button> : <Button className="flex-1" onClick={() => setConfirm(true)}>{t("test.finish")}</Button>}
         </div>
         <nav aria-label="Question palette" className="flex flex-wrap gap-1.5">
           {attempt.questions.map((x, k) => {
@@ -179,17 +181,17 @@ export function TestPlayer({ attempt }: { attempt: Attempt }) {
             );
           })}
         </nav>
-        <Button variant="ghost" onClick={() => setConfirm(true)}>Submit test</Button>
+        <Button variant="ghost" onClick={() => setConfirm(true)}>{t("test.submit")}</Button>
       </div>
 
       {confirm && (
         <div role="dialog" aria-modal aria-label="Submit test" className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setConfirm(false)}>
           <div className="w-full max-w-sm rounded-2xl bg-surface p-5" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold">Submit now?</h2>
+            <h2 className="text-lg font-semibold">{t("test.submitNow")}</h2>
             <p className="mt-1 text-sm text-muted">{answered} of {attempt.questions.length} answered{marked.size ? `, ${marked.size} marked for review` : ""}. Unanswered questions score zero (no negative marks).</p>
             <div className="mt-4 flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setConfirm(false)}>Keep going</Button>
-              <Button onClick={submit} disabled={submitting}>{submitting ? "Scoring…" : "Submit"}</Button>
+              <Button variant="secondary" onClick={() => setConfirm(false)}>{t("test.keepGoing")}</Button>
+              <Button onClick={submit} disabled={submitting}>{submitting ? t("test.scoring") : t("test.submit")}</Button>
             </div>
           </div>
         </div>

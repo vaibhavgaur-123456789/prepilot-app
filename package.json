@@ -16,7 +16,10 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "setup": "prisma migrate deploy && tsx prisma/seed.ts",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build"
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
+    "build:prod": "node scripts/prisma-postgres.mjs && prisma generate --schema prisma/postgres/schema.prisma && prisma db push --schema prisma/postgres/schema.prisma --skip-generate && next build",
+    "seed:prod": "node scripts/prisma-postgres.mjs && prisma generate --schema prisma/postgres/schema.prisma && tsx prisma/seed.ts --content",
+    "make-admin": "tsx scripts/make-admin.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -34,6 +37,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
+    "web-push": "^3.6.7",
     "zod": "^4.6.5",
     "zustand": "^5.0.15"
   },
@@ -42,6 +46,7 @@
     "@types/node": "^24.19.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",

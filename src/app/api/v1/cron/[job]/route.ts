@@ -13,7 +13,14 @@ function authorized(req: NextRequest) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-/** Scheduled jobs: POST /api/v1/cron/notifications | /api/v1/cron/benchmarks with Authorization: Bearer $CRON_SECRET */
+/**
+ * Scheduled jobs: /api/v1/cron/notifications | /api/v1/cron/benchmarks with Authorization: Bearer $CRON_SECRET.
+ * GET is what Vercel Cron sends; POST works for any other scheduler (e.g. cron-job.org).
+ */
+export async function GET(req: NextRequest, ctx: { params: Promise<{ job: string }> }) {
+  return POST(req, ctx);
+}
+
 export async function POST(req: NextRequest, ctx: { params: Promise<{ job: string }> }) {
   if (!authorized(req)) return NextResponse.json({ error: { code: "UNAUTHORIZED", message: "Invalid cron secret." } }, { status: 401 });
   try {

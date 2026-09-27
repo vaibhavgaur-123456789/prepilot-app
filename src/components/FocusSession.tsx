@@ -7,6 +7,7 @@ import { ApiError, newClientId, sendOrQueue } from "@/lib/client/api";
 import { activeMs, breakMs, fmtClock, useTimer } from "@/lib/client/timer-store";
 import { Alert, Badge, Button, Card, cx, inputClass } from "./ui";
 import { CoffeeIcon, PauseIcon, PlayIcon } from "./icons";
+import { useT } from "@/i18n/client";
 
 type TaskInfo = { id: string; title: string; type: string; topicId: string | null; plannedMinutes: number; questionTarget: number; objective: string; topicName: string | null } | null;
 type Result = { xp: { type: string; amount: number; reason: string }[]; flags: string[]; message: string; achievements: { name: string; icon: string }[]; weakFlagged: string[]; pathwayMessage?: string | null } | null;
@@ -31,6 +32,7 @@ function Rating({ label, value, onChange, low, high }: { label: string; value: n
 
 export function FocusSession({ task }: { task: TaskInfo }) {
   const router = useRouter();
+  const tt = useT();
   const t = useTimer();
   const [now, setNow] = useState(0);
   const [stage, setStage] = useState<"setup" | "running" | "finish" | "done">("setup");
@@ -148,23 +150,23 @@ export function FocusSession({ task }: { task: TaskInfo }) {
   if (stage === "setup") {
     return (
       <div className="mx-auto max-w-lg px-4 py-6">
-        <Link href="/study" className="text-sm text-muted">← Back</Link>
-        <h1 className="mt-2 text-2xl font-bold">{task?.title ?? "Free study session"}</h1>
+        <Link href="/study" className="text-sm text-muted">← {tt("common.back")}</Link>
+        <h1 className="mt-2 text-2xl font-bold">{task?.title ?? tt("study.free")}</h1>
         {task?.objective && <p className="mt-1 text-sm text-muted">{task.objective}</p>}
         <Card className="mt-4 space-y-4">
           <div className="grid grid-cols-2 gap-2">
             {(["TIMER", "STOPWATCH"] as const).map((m) => (
               <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className={cx("min-h-11 rounded-xl border text-sm font-semibold", mode === m ? "border-primary bg-primary-soft text-primary" : "border-border")}>
-                {m === "TIMER" ? "Countdown" : "Stopwatch"}
+                {m === "TIMER" ? tt("focus.countdown") : tt("focus.stopwatch")}
               </button>
             ))}
           </div>
           {mode === "TIMER" && (
-            <label className="block"><span className="mb-1 block text-sm font-medium">Duration (minutes)</span><input type="number" min={5} max={240} className={inputClass} value={minutes} onChange={(e) => setMinutes(Math.max(5, Math.min(240, Number(e.target.value))))} /></label>
+            <label className="block"><span className="mb-1 block text-sm font-medium">{tt("focus.duration")}</span><input type="number" min={5} max={240} className={inputClass} value={minutes} onChange={(e) => setMinutes(Math.max(5, Math.min(240, Number(e.target.value))))} /></label>
           )}
           {task && task.questionTarget > 0 && <p className="text-sm">🎯 Question target: <b>{task.questionTarget}</b></p>}
-          <p className="text-xs text-muted">Tip: put your phone in another room. Tap &quot;Distracted&quot; whenever your attention drifts. It&apos;s for your insight, not a penalty.</p>
-          <Button className="w-full" onClick={start}><PlayIcon width={18} height={18} /> Start focus session</Button>
+          <p className="text-xs text-muted">{tt("focus.tip")}</p>
+          <Button className="w-full" onClick={start}><PlayIcon width={18} height={18} /> {tt("focus.start")}</Button>
         </Card>
       </div>
     );
@@ -177,7 +179,7 @@ export function FocusSession({ task }: { task: TaskInfo }) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-between bg-bg px-4 py-8 text-center">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted">{onBreak ? "Break" : t.phase === "paused" ? "Paused" : "Focus"}</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted">{onBreak ? tt("focus.break") : t.phase === "paused" ? tt("focus.paused") : tt("focus.focus")}</p>
           <p className="mt-1 max-w-md text-lg font-semibold">{t.title}</p>
           {task?.questionTarget ? <p className="text-sm text-muted">Target: {task.questionTarget} questions</p> : null}
         </div>
@@ -191,17 +193,17 @@ export function FocusSession({ task }: { task: TaskInfo }) {
           {error && <Alert tone="warning">{error}</Alert>}
           <div className="grid grid-cols-3 gap-2">
             {t.phase === "running" ? (
-              <Button variant="secondary" onClick={t.pause}><PauseIcon width={18} height={18} /> Pause</Button>
+              <Button variant="secondary" onClick={t.pause}><PauseIcon width={18} height={18} /> {tt("focus.pause")}</Button>
             ) : (
-              <Button onClick={t.resume}><PlayIcon width={18} height={18} /> {onBreak ? "Resume" : "Continue"}</Button>
+              <Button onClick={t.resume}><PlayIcon width={18} height={18} /> {onBreak ? tt("focus.resume") : tt("focus.continue")}</Button>
             )}
-            <Button variant="secondary" onClick={t.startBreak} disabled={onBreak}><CoffeeIcon width={18} height={18} /> Break</Button>
-            <Button variant="secondary" onClick={t.addDistraction}>Distracted</Button>
+            <Button variant="secondary" onClick={t.startBreak} disabled={onBreak}><CoffeeIcon width={18} height={18} /> {tt("focus.break")}</Button>
+            <Button variant="secondary" onClick={t.addDistraction}>{tt("focus.distracted")}</Button>
           </div>
-          <textarea className={cx(inputClass, "min-h-20 py-2")} placeholder="Session notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} />
+          <textarea className={cx(inputClass, "min-h-20 py-2")} placeholder={tt("focus.notes")} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} />
           <div className="flex gap-2">
-            <Button variant="ghost" className="flex-1" onClick={() => document.documentElement.requestFullscreen?.().catch(() => undefined)}>Full screen</Button>
-            <Button variant="danger" className="flex-1" onClick={finishNow}>End session</Button>
+            <Button variant="ghost" className="flex-1" onClick={() => document.documentElement.requestFullscreen?.().catch(() => undefined)}>{tt("focus.fullscreen")}</Button>
+            <Button variant="danger" className="flex-1" onClick={finishNow}>{tt("focus.end")}</Button>
           </div>
         </div>
       </div>
@@ -212,14 +214,14 @@ export function FocusSession({ task }: { task: TaskInfo }) {
     const actualMin = Math.round(activeMs(t) / 60_000);
     return (
       <div className="mx-auto max-w-lg space-y-4 px-4 py-6">
-        <h1 className="text-2xl font-bold">What did you actually complete?</h1>
+        <h1 className="text-2xl font-bold">{tt("focus.whatCompleted")}</h1>
         <Card className="space-y-4">
           <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="rounded-xl bg-surface-2 p-3"><p className="text-xs text-muted">Planned</p><p className="tabular text-xl font-semibold">{t.plannedMinutes || "–"} min</p></div>
-            <div className="rounded-xl bg-surface-2 p-3"><p className="text-xs text-muted">Actual focus</p><p className="tabular text-xl font-semibold">{actualMin} min</p></div>
+            <div className="rounded-xl bg-surface-2 p-3"><p className="text-xs text-muted">{tt("plan.planned")}</p><p className="tabular text-xl font-semibold">{t.plannedMinutes || "–"} {tt("common.min")}</p></div>
+            <div className="rounded-xl bg-surface-2 p-3"><p className="text-xs text-muted">{tt("focus.actualFocus")}</p><p className="tabular text-xl font-semibold">{actualMin} {tt("common.min")}</p></div>
           </div>
           <fieldset>
-            <legend className="mb-1 text-sm font-medium">How much of the task did you finish?</legend>
+            <legend className="mb-1 text-sm font-medium">{tt("focus.howMuch")}</legend>
             <div className="grid grid-cols-5 gap-1.5">
               {[0, 25, 50, 75, 100].map((p) => (
                 <button key={p} type="button" aria-pressed={completion === p} onClick={() => setCompletion(p)} className={cx("h-11 rounded-xl border text-sm font-semibold", completion === p ? "border-primary bg-primary text-on-primary" : "border-border")}>{p}%</button>
@@ -227,15 +229,15 @@ export function FocusSession({ task }: { task: TaskInfo }) {
             </div>
           </fieldset>
           <div className="grid grid-cols-2 gap-2">
-            <label className="block"><span className="mb-1 block text-sm font-medium">Questions attempted</span><input type="number" min={0} max={2000} inputMode="numeric" className={inputClass} value={attempted} onChange={(e) => setAttempted(Math.max(0, Number(e.target.value)))} /></label>
-            <label className="block"><span className="mb-1 block text-sm font-medium">Correct</span><input type="number" min={0} max={attempted} inputMode="numeric" className={inputClass} value={correct} onChange={(e) => setCorrect(Math.max(0, Number(e.target.value)))} /></label>
+            <label className="block"><span className="mb-1 block text-sm font-medium">{tt("focus.attempted")}</span><input type="number" min={0} max={2000} inputMode="numeric" className={inputClass} value={attempted} onChange={(e) => setAttempted(Math.max(0, Number(e.target.value)))} /></label>
+            <label className="block"><span className="mb-1 block text-sm font-medium">{tt("focus.correct")}</span><input type="number" min={0} max={attempted} inputMode="numeric" className={inputClass} value={correct} onChange={(e) => setCorrect(Math.max(0, Number(e.target.value)))} /></label>
           </div>
-          <Rating label="Difficulty" value={difficulty} onChange={setDifficulty} low="Easy" high="Very hard" />
-          <Rating label="Focus" value={focus} onChange={setFocus} low="Scattered" high="Deep" />
-          <Rating label="Energy" value={energy} onChange={setEnergy} low="Drained" high="Fresh" />
+          <Rating label={tt("focus.difficulty")} value={difficulty} onChange={setDifficulty} low="1" high="5" />
+          <Rating label={tt("focus.focusRating")} value={focus} onChange={setFocus} low="1" high="5" />
+          <Rating label={tt("focus.energy")} value={energy} onChange={setEnergy} low="1" high="5" />
           {task?.type === "REVISION" && (
             <fieldset>
-              <legend className="mb-1 text-sm font-medium">How well did you recall it?</legend>
+              <legend className="mb-1 text-sm font-medium">{tt("focus.recall")}</legend>
               <div className="grid grid-cols-4 gap-1.5">
                 {[[1, "Forgot"], [2, "Hard"], [3, "Good"], [4, "Easy"]].map(([v, l]) => (
                   <button key={v} type="button" aria-pressed={recall === v} onClick={() => setRecall(v as number)} className={cx("h-11 rounded-xl border text-sm font-semibold", recall === v ? "border-primary bg-primary text-on-primary" : "border-border")}>{l}</button>
@@ -249,8 +251,8 @@ export function FocusSession({ task }: { task: TaskInfo }) {
           )}
           {error && <Alert tone="danger">{error}</Alert>}
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => { t.resume(); setStage("running"); }}>Back to timer</Button>
-            <Button className="flex-1" onClick={submit} disabled={busy}>{busy ? "Saving…" : "Save session"}</Button>
+            <Button variant="secondary" onClick={() => { t.resume(); setStage("running"); }}>{tt("focus.backToTimer")}</Button>
+            <Button className="flex-1" onClick={submit} disabled={busy}>{busy ? tt("focus.saving") : tt("focus.saveSession")}</Button>
           </div>
         </Card>
       </div>
@@ -260,7 +262,7 @@ export function FocusSession({ task }: { task: TaskInfo }) {
   return (
     <div className="mx-auto max-w-lg space-y-4 px-4 py-10 text-center">
       <p className="text-5xl">✅</p>
-      <h1 className="text-2xl font-bold">Session saved</h1>
+      <h1 className="text-2xl font-bold">{tt("focus.saved")}</h1>
       {queued && <Alert tone="warning">You&apos;re offline. This session is saved on your device and will sync automatically.</Alert>}
       {result && (
         <Card className="space-y-3 text-left">
@@ -268,7 +270,7 @@ export function FocusSession({ task }: { task: TaskInfo }) {
           {result.xp.length > 0 ? (
             <div className="flex flex-wrap gap-2">{result.xp.map((x) => <Badge key={x.type} tone="success">+{x.amount} XP · {x.reason}</Badge>)}</div>
           ) : (
-            <p className="text-xs text-muted">No XP for this one. Study XP needs at least 5 focused minutes.</p>
+            <p className="text-xs text-muted">{tt("focus.noXp")}</p>
           )}
           {result.achievements.map((a) => <Alert key={a.name} tone="success" title={`${a.icon} Badge unlocked: ${a.name}`}>Keep it up.</Alert>)}
           {result.pathwayMessage && <p className="text-sm"><b>Weak-topic recovery:</b> {result.pathwayMessage}</p>}

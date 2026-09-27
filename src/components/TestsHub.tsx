@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/client/api";
 import { Alert, Badge, Button, Card, CardTitle, cx, EmptyState, inputClass, PageHeader } from "./ui";
 import { TrendChart } from "./charts";
+import { useT } from "@/i18n/client";
 
 type Mock = { id: string; title: string; type: string; durationMinutes: number; questionCount: number; custom: boolean; inProgress: string | null; attempts: { id: string; percent: number | null; submittedAt: string; accuracy: number | null }[] };
 type Hist = { id: string; title: string; type: string; percent: number; accuracy: number | null; submittedAt: string };
@@ -13,6 +14,7 @@ const TYPES = [["FULL", "Full mocks"], ["SECTIONAL", "Sectional"], ["DIAGNOSTIC"
 
 export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis }: { exam: { name: string; negativeMarking: number; marksPerQuestion: number }; mocks: Mock[]; history: Hist[]; subjects: { id: string; name: string; topics: { id: string; name: string }[] }[]; pendingAnalysis: { id: string; title: string } | null }) {
   const router = useRouter();
+  const t = useT();
   const [tab, setTab] = useState<string>("FULL");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis }: { 
   const subject = subjects.find((s) => s.id === subjectId);
   return (
     <div className="space-y-4">
-      <PageHeader title="Tests" subtitle={`${exam.name} · ${exam.marksPerQuestion} mark${exam.marksPerQuestion === 1 ? "" : "s"} per question, −${Math.round(exam.negativeMarking * 100) / 100} for a wrong answer`} />
+      <PageHeader title={t("tests.title")}subtitle={`${exam.name} · ${exam.marksPerQuestion} mark${exam.marksPerQuestion === 1 ? "" : "s"} per question, −${Math.round(exam.negativeMarking * 100) / 100} for a wrong answer`} />
       {error && <Alert tone="danger">{error}</Alert>}
       {pendingAnalysis && <Alert tone="warning" title="Analysis pending">Review <Link className="font-semibold underline" href={`/tests/result/${pendingAnalysis.id}`}>{pendingAnalysis.title}</Link>. The insight from a mock comes from its analysis.</Alert>}
 
@@ -72,8 +74,8 @@ export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis }: { 
                     <p className="text-xs text-muted">{m.questionCount} questions · {m.durationMinutes} min{m.attempts.length ? ` · attempted ${m.attempts.length}× · best ${best}%` : ""}</p>
                   </div>
                   <div className="flex gap-2">
-                    {m.attempts[0] && <Link href={`/tests/result/${m.attempts[0].id}`} className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-primary hover:bg-primary-soft">Analysis</Link>}
-                    <Button onClick={() => start(m.id, m.inProgress)} disabled={busy === m.id}>{m.inProgress ? "Resume" : m.attempts.length ? "Retake" : "Start"}</Button>
+                    {m.attempts[0] && <Link href={`/tests/result/${m.attempts[0].id}`} className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-primary hover:bg-primary-soft">{t("tests.analysis")}</Link>}
+                    <Button onClick={() => start(m.id, m.inProgress)} disabled={busy === m.id}>{m.inProgress ? t("tests.resume") : m.attempts.length ? t("tests.retake") : t("common.start")}</Button>
                   </div>
                 </li>
               );
@@ -83,7 +85,7 @@ export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis }: { 
       </Card>
 
       <Card>
-        <CardTitle>Build a practice test</CardTitle>
+        <CardTitle>{t("tests.build")}</CardTitle>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block"><span className="mb-1 block text-sm font-medium">Focus</span>
             <select className={inputClass} value={focus} onChange={(e) => setFocus(e.target.value as typeof focus)} disabled={!!topicId}>
@@ -109,7 +111,7 @@ export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis }: { 
       </Card>
 
       <Card>
-        <CardTitle>Score trend</CardTitle>
+        <CardTitle>{t("tests.trend")}</CardTitle>
         {history.length < 2 ? <p className="text-sm text-muted">Take at least two tests to see a trend.</p> : (
           <TrendChart data={history.map((h) => ({ label: new Date(h.submittedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" }), value: h.percent, name: h.title }))} unit="%" label="Test score (%)" />
         )}

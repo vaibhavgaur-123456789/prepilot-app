@@ -12,7 +12,8 @@ async function main() {
   const counts = { questions: await prisma.question.count(), topics: await prisma.topic.count(), mocks: await prisma.mock.count() };
   console.log(`content: ${counts.topics} topics, ${counts.questions} questions, ${counts.mocks} mocks`);
 
-  if (process.env.SEED_MODE !== "content") {
+  const contentOnly = process.env.SEED_MODE === "content" || process.argv.includes("--content");
+  if (!contentOnly) {
     const { seedDemo } = await import("./seed-data/demo");
     await seedDemo(prisma);
   }

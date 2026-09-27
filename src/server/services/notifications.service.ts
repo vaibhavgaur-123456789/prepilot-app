@@ -1,5 +1,6 @@
 import { prisma, isUniqueViolation } from "@/server/db";
 import { addDays, dayKey, diffDays, localMinutes, toMinutes, weekdayIndex } from "@/lib/engine/dates";
+import { sendPush } from "./push.service";
 
 function inQuiet(nowMin: number, start: string, end: string) {
   const s = toMinutes(start);
@@ -55,6 +56,7 @@ export async function generateNotifications(userId: string, now = new Date()) {
     try {
       created.push(await prisma.notification.create({ data: { userId, type: c.type, title: c.title, body: c.body, href: c.href, dedupeKey: `${userId}:${c.type}:${today}`, scheduledFor: now, deliveredAt: now } }));
       budget--;
+      await sendPush(userId, { title: c.title, body: c.body, href: c.href, tag: c.type }).catch(() => 0);
     } catch (e) {
       if (!isUniqueViolation(e)) throw e;
     }

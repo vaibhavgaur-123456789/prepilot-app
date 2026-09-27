@@ -71,6 +71,7 @@ export default async function ProfilePage() {
           preferredBlockMin: ctx.profile.preferredBlockMin, preferredSlots: parseJson<string[]>(ctx.profile.preferredSlots, []), benchmarkOptIn: user.benchmarkOptIn, hasPassword: !!user.passwordHash,
         }}
         prefs={JSON.parse(JSON.stringify(prefs))}
+        vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || null}
       />
 
       <Card>
