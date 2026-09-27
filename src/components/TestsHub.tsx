@@ -12,7 +12,7 @@ type Mock = { id: string; title: string; type: string; durationMinutes: number; 
 type Hist = { id: string; title: string; type: string; percent: number; accuracy: number | null; submittedAt: string };
 const TYPES = [["FULL", "Full mocks"], ["SECTIONAL", "Sectional"], ["DIAGNOSTIC", "Diagnostic"], ["TOPIC", "Topic tests"], ["CUSTOM", "Custom"]] as const;
 
-export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis }: { exam: { name: string; negativeMarking: number; marksPerQuestion: number }; mocks: Mock[]; history: Hist[]; subjects: { id: string; name: string; topics: { id: string; name: string }[] }[]; pendingAnalysis: { id: string; title: string } | null }) {
+export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis, personal = false }: { exam: { name: string; negativeMarking: number; marksPerQuestion: number }; mocks: Mock[]; history: Hist[]; subjects: { id: string; name: string; topics: { id: string; name: string }[] }[]; pendingAnalysis: { id: string; title: string } | null; personal?: boolean }) {
   const router = useRouter();
   const t = useT();
   const [tab, setTab] = useState<string>("FULL");
@@ -54,6 +54,7 @@ export function TestsHub({ exam, mocks, history, subjects, pendingAnalysis }: { 
   return (
     <div className="space-y-4">
       <PageHeader title={t("tests.title")}subtitle={`${exam.name} · ${exam.marksPerQuestion} mark${exam.marksPerQuestion === 1 ? "" : "s"} per question, −${Math.round(exam.negativeMarking * 100) / 100} for a wrong answer`} />
+      {personal && <Alert tone="primary" title={t("tests.personalTitle")}>{t("tests.personalText")}</Alert>}
       {error && <Alert tone="danger">{error}</Alert>}
       {pendingAnalysis && <Alert tone="warning" title="Analysis pending">Review <Link className="font-semibold underline" href={`/tests/result/${pendingAnalysis.id}`}>{pendingAnalysis.title}</Link>. The insight from a mock comes from its analysis.</Alert>}
 

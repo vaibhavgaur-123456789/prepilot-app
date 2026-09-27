@@ -13,6 +13,8 @@ export interface PaceInput {
   questionsLast14: number;
   mocksLast28: number;
   lastMockDate: string | null;
+  /** false for syllabi without mock tests (personal goals): mocks are neither required nor scheduled */
+  includeMocks?: boolean;
 }
 
 export type PaceStatus = "AHEAD" | "ON_TRACK" | "SLIGHTLY_BEHIND" | "BEHIND" | "NOT_ENOUGH_DATA";
@@ -86,12 +88,15 @@ export function computePace(i: PaceInput): PaceResult {
 
   const syllabus = metric("Syllabus pace", "units/week", curUnitsPerWeek, reqUnitsPerWeek, 1, enough);
   const questions = metric("Practice pace", "questions/day", curQ, reqQ, 0, enough);
-  const mocks = metric("Mock frequency", "mocks/week", curMocks, reqMocks, 1, true);
+  const withMocks = i.includeMocks !== false;
+  const mocks = withMocks
+    ? metric("Mock frequency", "mocks/week", curMocks, reqMocks, 1, true)
+    : { label: "Mock frequency", unit: "mocks/week", current: 0, required: 0, difference: 0, status: "NOT_ENOUGH_DATA" as PaceStatus, message: "No mock tests for a personal syllabus." };
 
   const since = i.lastMockDate ? diffDays(i.lastMockDate, i.today) : Infinity;
-  const mockDueToday = daysLeft > 0 && since >= Math.floor(7 / reqMocks);
+  const mockDueToday = withMocks && daysLeft > 0 && since >= Math.floor(7 / reqMocks);
 
-  const behind = [syllabus, questions, mocks].filter((m) => m.status === "BEHIND" || m.status === "SLIGHTLY_BEHIND");
+  const behind = [syllabus, questions, ...(withMocks ? [mocks] : [])].filter((m) => m.status === "BEHIND" || m.status === "SLIGHTLY_BEHIND");
   const summary =
     daysLeft === 0
       ? "Exam day. Trust your preparation."

@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { errorResponse } from "@/server/http";
 import { runNotificationSweep } from "@/server/services/notifications.service";
 import { aggregateBenchmarks } from "@/server/services/benchmark.service";
+import { fireDueAlarms } from "@/server/services/alarm.service";
 
 function authorized(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ job: strin
     const { job } = await ctx.params;
     if (job === "notifications") return NextResponse.json(await runNotificationSweep());
     if (job === "benchmarks") return NextResponse.json({ published: await aggregateBenchmarks() });
+    if (job === "alarms") return NextResponse.json(await fireDueAlarms());
     return NextResponse.json({ error: { code: "NOT_FOUND", message: "Unknown job." } }, { status: 404 });
   } catch (e) {
     return errorResponse(e);

@@ -60,7 +60,8 @@ export async function productMetrics(now = new Date()) {
 }
 
 export async function listExamsAdmin() {
-  return prisma.exam.findMany({ include: { _count: { select: { subjects: true, mocks: true, profiles: true } } }, orderBy: { name: "asc" } });
+  // Students' personal syllabi are private and not listed here.
+  return prisma.exam.findMany({ where: { ownerId: null }, include: { _count: { select: { subjects: true, mocks: true, profiles: true } } }, orderBy: { name: "asc" } });
 }
 
 export async function examTree(examId: string) {

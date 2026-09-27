@@ -3,13 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/client/api";
 import { Alert, Badge, Button, cx, inputClass, PageHeader } from "./ui";
-import { useT } from "@/i18n/client";
+import { useLang, useT } from "@/i18n/client";
 
 type Msg = { role: "user" | "assistant"; content: string; provider?: string | null };
-const SUGGESTIONS = ["What should I study today?", "I missed yesterday. What should I do?", "I have only 2 hours today.", "My Maths score is falling.", "Why am I getting questions wrong?", "Create a revision plan.", "Analyze my last mock.", "How ready am I?"];
+const SUGGESTIONS = {
+  en: ["What should I study today?", "I missed yesterday. What should I do?", "I have only 2 hours today.", "My Maths score is falling.", "Why am I getting questions wrong?", "Create a revision plan.", "Analyze my last mock.", "I don't feel like studying", "What's my streak?"],
+  hi: ["आज क्या पढ़ूँ?", "कल पढ़ाई छूट गई, अब क्या करूँ?", "आज सिर्फ 2 घंटे हैं", "मेरा Maths गिर रहा है", "मेरी गलतियाँ क्यों हो रही हैं?", "रिवीज़न प्लान बनाओ", "पिछला टेस्ट कैसा रहा?", "पढ़ने का मन नहीं कर रहा", "मेरी स्ट्रीक कितनी है?"],
+};
 
 export function CoachChat({ conversationId: initialId, initial, mode }: { conversationId: string | null; initial: Msg[]; mode: "llm" | "rules" }) {
   const t = useT();
+  const lang = useLang();
   const [id, setId] = useState(initialId);
   const [msgs, setMsgs] = useState<Msg[]>(initial);
   const [text, setText] = useState("");
@@ -42,7 +46,7 @@ export function CoachChat({ conversationId: initialId, initial, mode }: { conver
   return (
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col">
       <PageHeader title={t("coach.title")}subtitle="Answers use your actual plan, study history, mocks, weak topics and revision schedule." action={<Badge tone={mode === "llm" ? "primary" : "neutral"}>{mode === "llm" ? "Claude-powered" : "Built-in data coach"}</Badge>} />
-      {mode === "rules" && <p className="-mt-2 mb-3 text-xs text-muted">No AI key is configured, so the built-in coach answers from your data with fixed rules. Add ANTHROPIC_API_KEY to enable conversational answers.</p>}
+      {mode === "rules" && <p className="-mt-2 mb-3 text-xs text-muted">{t("coach.rulesNote")}</p>}
       <div className="flex-1 space-y-3" aria-live="polite">
         {msgs.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted">Ask anything about your preparation. Try one of these:</div>
@@ -58,7 +62,7 @@ export function CoachChat({ conversationId: initialId, initial, mode }: { conver
       </div>
       {error && <div className="mt-3"><Alert tone="danger">{error}</Alert></div>}
       <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-        {SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => send(s)} disabled={busy} className="shrink-0 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium hover:bg-surface-2">{s}</button>)}
+        {SUGGESTIONS[lang].map((s) => <button key={s} type="button" onClick={() => send(s)} disabled={busy} className="shrink-0 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium hover:bg-surface-2">{s}</button>)}
       </div>
       <form className="sticky bottom-20 flex gap-2 md:bottom-4" onSubmit={(e) => { e.preventDefault(); send(text); }}>
         <label className="sr-only" htmlFor="coach-input">Message</label>

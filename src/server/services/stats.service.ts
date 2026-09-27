@@ -68,6 +68,11 @@ export async function qualifyingDays(userId: string): Promise<Set<string>> {
   return new Set(rows.map((r) => r.date));
 }
 
+export async function leaveDays(userId: string): Promise<Set<string>> {
+  const rows = await prisma.dailyStat.findMany({ where: { userId, leave: true }, select: { date: true } });
+  return new Set(rows.map((r) => r.date));
+}
+
 export async function statsRange(userId: string, from: string, to: string) {
   return prisma.dailyStat.findMany({ where: { userId, date: { gte: from, lte: to } }, orderBy: { date: "asc" } });
 }

@@ -5,11 +5,12 @@ import { FocusSession } from "@/components/FocusSession";
 
 export const metadata = { title: "Focus session" };
 
-export default async function SessionPage({ params }: { params: Promise<{ taskId: string }> }) {
+export default async function SessionPage({ params, searchParams }: { params: Promise<{ taskId: string }>; searchParams: Promise<{ quick?: string }> }) {
   const user = await requireStudent();
   const { taskId } = await params;
   if (taskId === "free") {
-    return <FocusSession task={null} />;
+    // ?quick=1 = one-tap "punch in": the stopwatch starts immediately.
+    return <FocusSession task={null} autoStart={(await searchParams).quick === "1"} />;
   }
   const task = await prisma.task.findUnique({ where: { id: taskId }, include: { topic: { select: { name: true } } } });
   if (!task || task.userId !== user.id) notFound();

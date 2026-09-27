@@ -66,6 +66,11 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
           <Link href="/coach" className={cx("mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium", active("/coach") ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text")}>
             <ChatIcon /> {t("nav.coach")}
           </Link>
+          {([["/attendance", "📅", "quick.attendance"], ["/alarms", "⏰", "quick.alarm"], ["/syllabus", "📚", "quick.syllabus"], ["/help", "❓", "nav.howto"]] as const).map(([href, icon, key]) => (
+            <Link key={href} href={href} className={cx("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium", active(href) ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text")}>
+              <span className="w-[22px] text-center" aria-hidden>{icon}</span> {t(key)}
+            </Link>
+          ))}
           {isAdmin && (
             <Link href="/admin" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">
               ⚙️ {t("nav.admin")}
@@ -80,12 +85,13 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
 
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] px-4 py-2.5 backdrop-blur md:px-8">
-          <Link href="/" className="flex items-center gap-2 font-bold md:invisible">
+          <Link href="/" className="flex items-center gap-2 font-bold md:invisible" aria-label={BRAND.name}>
             <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary text-sm text-on-primary">P</span>
-            {BRAND.name}
+            <span className="hidden min-[420px]:inline">{BRAND.name}</span>
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <LanguageSwitch signedIn className="md:hidden" />
+            <Link href="/help" className="grid h-11 w-10 place-items-center rounded-xl text-lg text-muted hover:bg-surface-2 md:hidden" aria-label={t("nav.howto")}>?</Link>
             <FeedbackButton signedIn className="md:hidden" />
             <Link href="/coach" className="grid h-11 w-11 place-items-center rounded-xl text-muted hover:bg-surface-2 md:hidden" aria-label={t("nav.coach")}>
               <ChatIcon />

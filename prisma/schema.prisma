@@ -57,6 +57,23 @@ model User {
   subscriptions     Subscription[]
   feedback          Feedback[]
   pushSubscriptions PushSubscription[]
+  alarms            StudyAlarm[]
+}
+
+/// A daily study alarm the student sets ("7:00 pm padhai"). Delivered as a push notification.
+model StudyAlarm {
+  id          String   @id @default(cuid())
+  userId      String
+  time        String   // HH:MM local
+  days        String   @default("[0,1,2,3,4,5,6]") // JSON: 0 = Monday … 6 = Sunday
+  label       String   @default("")
+  enabled     Boolean  @default(true)
+  lastFiredOn String?  // dayKey
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([enabled, time])
 }
 
 /// A problem report / complaint / suggestion from a student. Reaches the admin inbox (and email if configured).
@@ -109,6 +126,7 @@ model StudentProfile {
   targetScore       Float?
   targetRank        Int?
   prepLevel         String   @default("BEGINNER") // BEGINNER | INTERMEDIATE | ADVANCED
+  purpose           String   @default("EXAM")     // EXAM | SCHOOL | SELF | SKILL
   dailyMinutes      Int      @default(180)        // available study time per day
   preferredSlots    String   @default("[\"MORNING\",\"EVENING\"]") // JSON: MORNING|AFTERNOON|EVENING|NIGHT
   dailyGoalMinutes  Int      @default(180)
@@ -158,6 +176,7 @@ model Exam {
   marksPerQuestion Float   @default(1)
   negativeMarking Float    @default(0) // marks deducted per wrong answer
   isActive        Boolean  @default(true)
+  ownerId         String?  // set = a student's own private syllabus (not listed for others)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -166,6 +185,8 @@ model Exam {
   mocks      Mock[]
   profiles   StudentProfile[]
   benchmarks BenchmarkStat[]
+
+  @@index([ownerId])
 }
 
 model ExamSection {
@@ -190,6 +211,7 @@ model Subject {
   weightage     Float   @default(1)   // relative share of exam marks
   isQuantitative Boolean @default(false) // enables CALCULATION mistake heuristic
   isMemoryBased Boolean @default(false)  // enables MEMORY mistake heuristic
+  book          String? // the book the student studies this subject from
   exam          Exam    @relation(fields: [examId], references: [id], onDelete: Cascade)
   section       ExamSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   topics        Topic[]
@@ -587,6 +609,8 @@ model DailyStat {
   revisionScore     Int?
   testingScore      Int?
   dailyScore        Int?
+  leave             Boolean  @default(false) // a day off the student marked (doesn't break the streak)
+  leaveNote         String?
   blocker           String?  // TIME | LOW_ENERGY | PHONE | DIFFICULT_TOPIC | UNEXPECTED_WORK | OTHER
   blockerNote       String?
   reviewedAt        DateTime?

@@ -30,7 +30,7 @@ function Rating({ label, value, onChange, low, high }: { label: string; value: n
   );
 }
 
-export function FocusSession({ task }: { task: TaskInfo }) {
+export function FocusSession({ task, autoStart = false }: { task: TaskInfo; autoStart?: boolean }) {
   const router = useRouter();
   const tt = useT();
   const t = useTimer();
@@ -59,7 +59,10 @@ export function FocusSession({ task }: { task: TaskInfo }) {
     const st = useTimer.getState();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (st.clientId && st.phase !== "idle" && (st.taskId ?? null) === (task?.id ?? null)) setStage("running");
-  }, [task?.id]);
+    else if (autoStart && st.phase === "idle") start("STOPWATCH");
+    // Runs once on mount; `start` is a hoisted declaration that reads the latest props.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task?.id, autoStart]);
 
   useEffect(() => {
     if (stage !== "running") return;
@@ -88,12 +91,13 @@ export function FocusSession({ task }: { task: TaskInfo }) {
   const remaining = plannedMs - act;
   const breakLeft = BREAK_MIN * 60_000 - (t.phase === "break" && t.segmentStart && now ? now - t.segmentStart : 0);
 
-  async function start() {
+  async function start(modeOverride?: "TIMER" | "STOPWATCH") {
+    const m = modeOverride ?? mode;
     const clientId = newClientId();
-    t.start({ clientId, taskId: task?.id ?? null, topicId: task?.topicId ?? null, title: task?.title ?? "Free study", mode, plannedMinutes: mode === "TIMER" ? minutes : task?.plannedMinutes ?? 0 });
+    t.start({ clientId, taskId: task?.id ?? null, topicId: task?.topicId ?? null, title: task?.title ?? tt("study.free"), mode: m, plannedMinutes: m === "TIMER" ? minutes : task?.plannedMinutes ?? 0 });
     setStage("running");
     try {
-      await sendOrQueue("/api/v1/sessions", { action: "start", data: { clientId, taskId: task?.id ?? null, topicId: task?.topicId ?? null, mode, plannedMinutes: minutes, startedAt: new Date().toISOString() } });
+      await sendOrQueue("/api/v1/sessions", { action: "start", data: { clientId, taskId: task?.id ?? null, topicId: task?.topicId ?? null, mode: m, plannedMinutes: m === "TIMER" ? minutes : 0, startedAt: new Date().toISOString() } });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Couldn't register the session start. Your timer is still running and will sync.");
     }
@@ -166,7 +170,7 @@ export function FocusSession({ task }: { task: TaskInfo }) {
           )}
           {task && task.questionTarget > 0 && <p className="text-sm">🎯 Question target: <b>{task.questionTarget}</b></p>}
           <p className="text-xs text-muted">{tt("focus.tip")}</p>
-          <Button className="w-full" onClick={start}><PlayIcon width={18} height={18} /> {tt("focus.start")}</Button>
+          <Button className="w-full" onClick={() => start()}><PlayIcon width={18} height={18} /> {tt("focus.start")}</Button>
         </Card>
       </div>
     );

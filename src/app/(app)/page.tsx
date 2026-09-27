@@ -5,6 +5,7 @@ import { formatMinutes } from "@/lib/engine/dates";
 import { getT } from "@/i18n/server";
 import { Alert, Badge, Card, CardTitle, LinkButton, Progress, Provenance, Stat } from "@/components/ui";
 import { FlameIcon } from "@/components/icons";
+import { InstallButton } from "@/components/InstallButton";
 
 export const metadata = { title: "Home" };
 
@@ -31,6 +32,23 @@ export default async function HomePage() {
           <p className="tabular text-2xl font-bold">{h.exam.daysLeft}</p>
           <p className="text-xs text-muted">{t("common.daysLeft")}</p>
         </div>
+      </div>
+
+      <InstallButton variant="banner" />
+
+      {/* One-tap actions: start the study timer ("punch in"), attendance, alarms, own syllabus */}
+      <div className="grid grid-cols-4 gap-2">
+        {[
+          { href: "/study/session/free?quick=1", icon: "⏱", label: t("quick.timer"), primary: true },
+          { href: "/attendance", icon: "📅", label: t("quick.attendance") },
+          { href: "/alarms", icon: "⏰", label: t("quick.alarm") },
+          { href: "/syllabus", icon: "📚", label: t("quick.syllabus") },
+        ].map((q) => (
+          <Link key={q.href} href={q.href} className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border p-2 text-center text-xs font-semibold ${q.primary ? "border-primary bg-primary text-on-primary" : "border-border bg-surface hover:bg-surface-2"}`}>
+            <span className="text-2xl" aria-hidden>{q.icon}</span>
+            {q.label}
+          </Link>
+        ))}
       </div>
 
       {h.recovery && (
@@ -63,6 +81,11 @@ export default async function HomePage() {
               </details>
             )}
             <LinkButton href={nextHref} className="mt-4 w-full sm:w-auto">{t("home.startStudy")}</LinkButton>
+          </>
+        ) : h.progress.tasksTotal === 0 && h.syllabusEmpty ? (
+          <>
+            <p className="text-sm text-muted">{t("home.addChapters")}</p>
+            <LinkButton href="/syllabus" className="mt-3">📚 {t("quick.syllabus")}</LinkButton>
           </>
         ) : (
           <p className="text-sm text-muted">{t("home.doneText")}</p>

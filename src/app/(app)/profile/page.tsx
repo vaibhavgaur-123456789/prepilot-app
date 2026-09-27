@@ -82,6 +82,10 @@ export default async function ProfilePage() {
       <Card>
         <CardTitle>More</CardTitle>
         <div className="flex flex-wrap gap-2 text-sm">
+          <Link className="rounded-xl bg-primary-soft px-3 py-2 font-semibold text-primary" href="/help">❓ Help / मदद</Link>
+          <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/syllabus">📚 My syllabus</Link>
+          <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/attendance">📅 Attendance</Link>
+          <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/alarms">⏰ Alarms</Link>
           <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/review/weekly">Weekly reports</Link>
           <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/review/night">Night review</Link>
           <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/study/mistakes">Mistake book</Link>

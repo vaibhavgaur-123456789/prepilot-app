@@ -1,6 +1,7 @@
 import { BRAND } from "@/config/brand";
 import { LanguageSwitch } from "@/i18n/client";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { InstallButton } from "@/components/InstallButton";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,7 +14,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <p className="mt-1 text-sm text-muted">{BRAND.tagline}</p>
         </div>
         <div className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow)]">{children}</div>
-        <div className="mt-4 text-center"><FeedbackButton signedIn={false} variant="link" /></div>
+        <div className="mt-4 flex flex-col items-center gap-3"><InstallButton /><FeedbackButton signedIn={false} variant="link" /></div>
       </div>
     </main>
   );

@@ -22,6 +22,7 @@ export default async function TestsPage() {
       history={JSON.parse(JSON.stringify(history))}
       subjects={subjects.map((s) => ({ id: s.id, name: s.name, topics: s.topics }))}
       pendingAnalysis={pendingAnalysis ? { id: pendingAnalysis.id, title: pendingAnalysis.mock.title } : null}
+      personal={!!ctx.exam.ownerId}
     />
   );
 }

@@ -32,6 +32,7 @@ export const onboardingSchema = z.object({
   targetScore: z.number().min(0).max(1000).nullable().optional(),
   targetRank: z.number().int().min(1).max(10_000_000).nullable().optional(),
   prepLevel: z.enum(PREP_LEVELS),
+  purpose: z.enum(["EXAM", "SCHOOL", "SELF", "SKILL"]).optional(),
   dailyMinutes: z.number().int().min(30).max(720),
   preferredSlots: z.array(z.enum(SLOTS)).min(1).max(4),
   dailyGoalMinutes: z.number().int().min(15).max(720).optional(),

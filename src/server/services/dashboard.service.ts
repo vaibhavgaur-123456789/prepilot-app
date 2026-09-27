@@ -91,6 +91,8 @@ export async function getHome(userId: string, now = new Date()) {
     pace: { summary: pace.summary, questions: pace.questions, mocks: pace.mocks, syllabus: pace.syllabus },
     unreadNotifications: unread,
     nightReviewDue: localHour(now, ctx.tz) >= 19 && !todayStat?.reviewedAt && (todayStat?.plannedMinutes ?? 0) > 0,
+    syllabusEmpty: insights.length === 0,
+    leaveToday: plan.planDay?.mode === "LEAVE",
   };
 }
 export type HomeData = Awaited<ReturnType<typeof getHome>>;

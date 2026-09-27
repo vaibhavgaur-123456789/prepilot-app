@@ -12,7 +12,7 @@ import { refreshReadiness } from "./readiness.service";
 
 export async function listExams() {
   const exams = await prisma.exam.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ownerId: null },
     include: { sections: { orderBy: { order: "asc" } }, subjects: { orderBy: { order: "asc" }, include: { topics: { orderBy: { order: "asc" }, include: { _count: { select: { children: true } } } } } } },
     orderBy: { name: "asc" },
   });
@@ -55,7 +55,8 @@ export interface Baseline {
 /** Turn onboarding answers into a measurable starting point, a first plan and a revision schedule. */
 export async function completeOnboarding(userId: string, input: OnboardingInput, now = new Date()) {
   const exam = await prisma.exam.findUnique({ where: { id: input.examId } });
-  if (!exam || !exam.isActive) throw badRequest("Please choose an exam from the list.");
+  // Listed exams must be active; a personal syllabus may only be used by its owner.
+  if (!exam || (exam.ownerId ? exam.ownerId !== userId : !exam.isActive)) throw badRequest("Please choose an exam from the list.");
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const timezone = input.timezone ?? user.timezone;
   const today = dayKey(now, timezone);
@@ -141,6 +142,7 @@ export async function completeOnboarding(userId: string, input: OnboardingInput,
       targetScore: input.targetScore ?? null,
       targetRank: input.targetRank ?? null,
       prepLevel: input.prepLevel,
+      purpose: input.purpose ?? "EXAM",
       dailyMinutes: input.dailyMinutes,
       preferredSlots: toJson(input.preferredSlots),
       dailyGoalMinutes: input.dailyGoalMinutes ?? input.dailyMinutes,

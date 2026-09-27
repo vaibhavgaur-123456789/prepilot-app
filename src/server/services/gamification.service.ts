@@ -2,7 +2,7 @@ import { prisma, isUniqueViolation } from "@/server/db";
 import { addDays, weekStart } from "@/lib/engine/dates";
 import { currentStreak, bestStreak } from "@/lib/engine/streaks";
 import { levelFromXp, type XpAward } from "@/lib/engine/xp";
-import { qualifyingDays } from "./stats.service";
+import { leaveDays, qualifyingDays } from "./stats.service";
 
 /** Persist XP awards. Duplicate dedupe keys are silently ignored (an activity is rewarded once). */
 export async function awardXp(userId: string, date: string, awards: XpAward[]): Promise<XpAward[]> {
@@ -28,10 +28,10 @@ export async function xpEarnedToday(userId: string, date: string) {
 }
 
 export async function xpSummary(userId: string, today: string) {
-  const [agg, days] = await Promise.all([prisma.xpEvent.aggregate({ where: { userId }, _sum: { amount: true } }), qualifyingDays(userId)]);
+  const [agg, days, rest] = await Promise.all([prisma.xpEvent.aggregate({ where: { userId }, _sum: { amount: true } }), qualifyingDays(userId), leaveDays(userId)]);
   const total = agg._sum.amount ?? 0;
-  const streak = currentStreak(days, today);
-  return { ...levelFromXp(total), streak: streak.streak, forgivenOn: streak.forgivenOn, bestStreak: Math.max(bestStreak(days), streak.streak), studiedToday: days.has(today) };
+  const streak = currentStreak(days, today, rest);
+  return { ...levelFromXp(total), streak: streak.streak, forgivenOn: streak.forgivenOn, bestStreak: Math.max(bestStreak(days, rest), streak.streak), studiedToday: days.has(today) };
 }
 
 export async function personalRecords(userId: string) {

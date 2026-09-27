@@ -5,6 +5,60 @@ import { useRouter } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/client/api";
 import { formatMinutes } from "@/lib/engine/dates";
 import { Alert, Badge, Button, Card, cx, inputClass, Progress, Provenance } from "./ui";
+import { useT } from "@/i18n/client";
+
+type NewSubject = { name: string; book: string; chapters: string };
+
+/** "My exam/goal isn't listed": the student types their own subjects, book and chapters. */
+function CustomSyllabusForm({ purpose, onCreated, onCancel }: { purpose: string; onCreated: (e: Exam) => void; onCancel: () => void }) {
+  const t = useT();
+  const [goal, setGoal] = useState("");
+  const [subjects, setSubjects] = useState<NewSubject[]>([{ name: "", book: "", chapters: "" }]);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const upd = (i: number, patch: Partial<NewSubject>) => setSubjects((xs) => xs.map((s, j) => (j === i ? { ...s, ...patch } : s)));
+
+  async function create() {
+    const clean = subjects.filter((s) => s.name.trim());
+    if (!goal.trim()) return setError(t("ob.custom.needGoal"));
+    if (!clean.length) return setError(t("ob.custom.needSubject"));
+    setBusy(true);
+    setError(null);
+    try {
+      const e = await apiFetch<Exam>("/api/v1/syllabus", {
+        method: "POST",
+        body: { action: "create", data: { name: goal.trim(), purpose, subjects: clean.map((s) => ({ name: s.name.trim(), book: s.book.trim() || null, chapters: s.chapters.split(/\r?\n/).map((c) => c.trim()).filter(Boolean) })) } },
+      });
+      onCreated(e);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't save.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-3 rounded-xl border border-primary/40 bg-primary-soft/40 p-3">
+      <p className="text-sm font-semibold">{t("ob.custom.title")}</p>
+      <label className="block"><span className="mb-1 block text-sm font-medium">{t("ob.custom.goal")}</span><input className={inputClass} maxLength={120} placeholder={t("ob.custom.goalPlaceholder")} value={goal} onChange={(e) => setGoal(e.target.value)} /></label>
+      {subjects.map((s, i) => (
+        <div key={i} className="space-y-2 rounded-xl bg-surface p-3">
+          <div className="flex items-center justify-between"><span className="text-xs font-semibold text-muted">{t("ob.custom.subject")} {i + 1}</span>{subjects.length > 1 && <button type="button" className="text-xs text-danger" onClick={() => setSubjects((xs) => xs.filter((_, j) => j !== i))}>✕</button>}</div>
+          <input className={inputClass} maxLength={120} placeholder={t("ob.custom.subjectPlaceholder")} value={s.name} onChange={(e) => upd(i, { name: e.target.value })} aria-label={`${t("ob.custom.subject")} ${i + 1}`} />
+          <input className={inputClass} maxLength={120} placeholder={t("ob.custom.bookPlaceholder")} value={s.book} onChange={(e) => upd(i, { book: e.target.value })} aria-label={t("ob.custom.book")} />
+          <textarea className={cx(inputClass, "min-h-24 py-2")} placeholder={t("ob.custom.chaptersPlaceholder")} value={s.chapters} onChange={(e) => upd(i, { chapters: e.target.value })} aria-label={t("ob.custom.chapters")} />
+        </div>
+      ))}
+      <button type="button" className="text-sm font-semibold text-primary" onClick={() => setSubjects((xs) => [...xs, { name: "", book: "", chapters: "" }])}>➕ {t("ob.custom.addSubject")}</button>
+      <p className="text-xs text-muted">{t("ob.custom.later")}</p>
+      {error && <Alert tone="danger">{error}</Alert>}
+      <div className="flex gap-2">
+        <Button type="button" variant="secondary" onClick={onCancel}>{t("common.cancel")}</Button>
+        <Button type="button" onClick={create} disabled={busy}>{busy ? t("focus.saving") : t("ob.custom.create")}</Button>
+      </div>
+    </div>
+  );
+}
 
 type Exam = {
   id: string; name: string; shortName: string; category: string; description: string; durationMinutes: number; totalQuestions: number;
@@ -39,7 +93,11 @@ function Chip({ on, onClick, children, label }: { on: boolean; onClick: () => vo
   );
 }
 
-export function OnboardingWizard({ exams, defaultName, changing = false, current = null }: { exams: Exam[]; defaultName: string; changing?: boolean; current?: { examId: string; examDate: string; dailyMinutes: number } | null }) {
+export function OnboardingWizard({ exams: initialExams, defaultName, changing = false, current = null }: { exams: Exam[]; defaultName: string; changing?: boolean; current?: { examId: string; examDate: string; dailyMinutes: number } | null }) {
+  const t = useT();
+  const [exams, setExams] = useState<Exam[]>(initialExams);
+  const [purpose, setPurpose] = useState<"EXAM" | "SCHOOL" | "SELF" | "SKILL">("EXAM");
+  const [showCustom, setShowCustom] = useState(false);
   const router = useRouter();
   const [step, setStep] = useState(changing ? 1 : 0);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +151,7 @@ export function OnboardingWizard({ exams, defaultName, changing = false, current
       const res = await apiFetch<{ baseline: Baseline; readiness: { score: number; confidence: string } }>("/api/v1/onboarding", {
         method: "POST",
         body: {
-          name, ageRange, examId, examDate, targetScore: targetScore ? Number(targetScore) : null, prepLevel, dailyMinutes, preferredSlots: slots,
+          name, ageRange, examId, examDate, purpose, targetScore: targetScore ? Number(targetScore) : null, prepLevel, dailyMinutes, preferredSlots: slots,
           dailyGoalMinutes: dailyGoal ?? dailyMinutes, weeklyGoalMinutes: weeklyGoal ?? dailyMinutes * 7,
           completedTopicIds: Object.entries(status).filter(([, s]) => s === "COMPLETED").map(([id]) => id),
           inProgressTopicIds: Object.entries(status).filter(([, s]) => s === "IN_PROGRESS").map(([id]) => id),
@@ -201,17 +259,44 @@ export function OnboardingWizard({ exams, defaultName, changing = false, current
         {step === 1 && (
           <div className="space-y-4">
             <fieldset>
-              <legend className="mb-2 text-sm font-medium">Target exam</legend>
+              <legend className="mb-2 text-sm font-medium">{t("ob.purpose")}</legend>
+              <div className="grid grid-cols-2 gap-2">
+                {(["EXAM", "SCHOOL", "SELF", "SKILL"] as const).map((p) => (
+                  <Chip key={p} on={purpose === p} onClick={() => { setPurpose(p); if (p !== "EXAM") setShowCustom(true); }}>{t(`ob.purpose.${p}`)}</Chip>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium">{purpose === "EXAM" ? t("ob.pickExam") : t("ob.pickGoal")}</legend>
               <div className="grid gap-2">
-                {exams.map((e) => (
+                {exams.filter((e) => purpose === "EXAM" || (e as { custom?: boolean }).custom).map((e) => (
                   <button key={e.id} type="button" aria-pressed={examId === e.id} onClick={() => { setExamId(e.id); setStatus({}); setWeak([]); setStrong([]); }} className={cx("rounded-xl border p-3 text-left", examId === e.id ? "border-primary bg-primary-soft" : "border-border hover:bg-surface-2")}>
                     <p className="font-semibold">{e.name}</p>
                     <p className="text-xs text-muted">{e.description}</p>
                   </button>
                 ))}
               </div>
+              {!showCustom ? (
+                <button type="button" onClick={() => setShowCustom(true)} className="mt-2 w-full rounded-xl border-2 border-dashed border-primary/50 p-3 text-left text-sm font-semibold text-primary hover:bg-primary-soft">
+                  ➕ {t("ob.notListed")}
+                  <span className="block text-xs font-normal text-muted">{t("ob.notListedHint")}</span>
+                </button>
+              ) : (
+                <CustomSyllabusForm
+                  purpose={purpose}
+                  onCancel={() => setShowCustom(false)}
+                  onCreated={(created) => {
+                    setExams((xs) => [...xs, created]);
+                    setExamId(created.id);
+                    setStatus({});
+                    setWeak([]);
+                    setStrong([]);
+                    setShowCustom(false);
+                  }}
+                />
+              )}
             </fieldset>
-            <label className="block"><span className="mb-1 block text-sm font-medium">Exam date</span><input type="date" className={inputClass} value={examDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setExamDate(e.target.value)} /></label>
+            <label className="block"><span className="mb-1 block text-sm font-medium">{purpose === "EXAM" ? t("ob.examDate") : t("ob.targetDate")}</span><input type="date" className={inputClass} value={examDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setExamDate(e.target.value)} /></label>
             <label className="block"><span className="mb-1 block text-sm font-medium">Target score <span className="text-muted">(optional)</span></span><input type="number" inputMode="numeric" min={0} className={inputClass} value={targetScore} onChange={(e) => setTargetScore(e.target.value)} /></label>
           </div>
         )}

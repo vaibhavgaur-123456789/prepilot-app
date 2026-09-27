@@ -93,6 +93,7 @@ export async function paceFor(ctx: StudentContext, now = new Date()) {
     questionsLast14: stats14._sum.questions ?? 0,
     mocksLast28: mocks28,
     lastMockDate: lastMock?.submittedAt ? dayKey(lastMock.submittedAt, user.timezone) : null,
+    includeMocks: !ctx.exam.ownerId && (await prisma.mock.count({ where: { examId: ctx.exam.id, createdById: null } })) > 0,
   });
 }
 
@@ -137,6 +138,17 @@ export async function ensureDayPlan(userId: string, opts: EnsurePlanOptions = {}
 
   const existing = await prisma.planDay.findUnique({ where: { userId_date: { userId, date } } });
   if (existing && !opts.force) return getDayPlan(userId, date);
+
+  // A day the student marked as leave gets an empty plan; unfinished work waits for the next study day.
+  const leave = await prisma.dailyStat.findUnique({ where: { userId_date: { userId, date } }, select: { leave: true, leaveNote: true } });
+  if (leave?.leave) {
+    await prisma.planDay.upsert({
+      where: { userId_date: { userId, date } },
+      create: { userId, date, capacityMinutes: 0, plannedMinutes: 0, mode: "LEAVE", notes: toJson([`Leave day${leave.leaveNote ? `: ${leave.leaveNote}` : ""}. Rest well. Nothing is planned and your streak is safe.`]), configVersion: CONFIG_VERSION },
+      update: { capacityMinutes: 0, plannedMinutes: 0, mode: "LEAVE", notes: toJson(["Leave day. Rest well. Nothing is planned and your streak is safe."]) },
+    });
+    return getDayPlan(userId, date);
+  }
 
   if (date === ctx.today) await triageUnfinished(ctx);
 

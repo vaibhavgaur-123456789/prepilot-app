@@ -7,6 +7,7 @@ import { getStudentContext } from "@/server/services/context";
 import { loadTopicInsights } from "@/server/services/learning.service";
 import { ensureDayPlan, paceFor } from "@/server/services/planner.service";
 import { revisionQueue } from "@/server/services/revision.service";
+import { xpSummary } from "@/server/services/gamification.service";
 
 /**
  * A compact, bounded summary of the student's measured data. This, not the database, is what the model sees.
@@ -51,7 +52,13 @@ export async function buildCoachContext(userId: string, now = new Date()) {
 
   const analysis = lastMock ? parseJson<{ bySubject?: { name: string; accuracy: number | null; correct: number; wrong: number; skipped: number }[]; insights?: string[]; overconfident?: string[]; time?: { overTime: number; fastWrong: number } }>(lastMock.analysis, {}) : null;
 
+  const xp = await xpSummary(userId, today);
+  const todayStat = await prisma.dailyStat.findUnique({ where: { userId_date: { userId, date: today } } });
   return {
+    language: ctx.user.language,
+    progress: { streak: xp.streak, bestStreak: xp.bestStreak, level: xp.level, xp: xp.xp, todayMinutes: todayStat?.actualMinutes ?? 0, weekMinutes: stats.reduce((s, d) => s + d.actualMinutes, 0) },
+    // Every chapter with its numbers, for topic questions ("percentage kaise sudharu?"). Not sent to the LLM in full.
+    topics: insights.map((i) => ({ name: i.signals.topicName, subject: i.signals.subjectName, status: i.signals.status, attempts: i.signals.attempts, accuracy: i.weakness.accuracy, minutes: i.signals.minutesStudied, revisionOn: i.signals.nextRevisionOn, weak: i.weakness.isWeak, step: i.signals.recoveryStep })),
     student: { name: ctx.user.name.split(" ")[0], exam: ctx.exam.name, examDate: ctx.profile.examDate, daysLeft: diffDays(today, ctx.profile.examDate), dailyAvailable: formatMinutes(ctx.profile.dailyMinutes), recoveryMode: ctx.profile.recoveryMode },
     today: {
       date: today,
