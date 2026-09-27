@@ -7,7 +7,9 @@ const PUBLIC = ["/welcome", "/login", "/signup", "/offline", "/robots.txt", "/si
 /** Signed-out visitors: "/" shows the public landing page; other private pages go to /login. */
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isPublic = PUBLIC.some((p) => pathname === p || pathname.startsWith(`${p}/`) || pathname.startsWith(`${p}?`));
+  const isPublic =
+    PUBLIC.some((p) => pathname === p || pathname.startsWith(`${p}/`) || pathname.startsWith(`${p}?`)) ||
+    /^\/google[0-9a-f]+\.html$/.test(pathname); // Google Search Console verification file
   const sid = await verifyToken(req.cookies.get(SESSION_COOKIE)?.value);
   if (!sid && !isPublic) {
     const url = req.nextUrl.clone();
