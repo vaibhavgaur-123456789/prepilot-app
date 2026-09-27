@@ -28,7 +28,9 @@ Kul kharcha: **₹0** (sab free plans). Play Store pe daalna ho to Google ki ek 
 ## Step 3: Vercel pe app daalein (10 min)
 1. https://vercel.com → **Sign up with GitHub**.
 2. **Add New → Project** → `preppilot` repo **Import** karein.
-3. **Environment Variables** mein ye sab daalein:
+3. **Environment Variables**: sabse aasaan tarika ye hai ki `PrepPilot` folder ki **`.env.vercel`** file kholo (Notepad mein). Usme saari secret values pehle se bhari hain. Bas 3 lines (`FILL-ME`) mein Supabase ke dono URL aur apna Vercel link bharo, phir poora text copy karke Vercel ke "Key" box mein paste kar do. Vercel khud alag-alag kar dega.
+
+   Neeche har value ka matlab hai:
 
 | Naam | Value |
 |---|---|
