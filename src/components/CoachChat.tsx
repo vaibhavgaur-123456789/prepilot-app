@@ -52,7 +52,7 @@ export function CoachChat({ conversationId: initialId, initial, mode }: { conver
           <div className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted">Ask anything about your preparation. Try one of these:</div>
         )}
         {msgs.map((m, i) => (
-          <div key={i} className={cx("max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm", m.role === "user" ? "ml-auto bg-primary text-on-primary" : "border border-border bg-surface")}>
+          <div key={i} className={cx("max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm", m.role === "user" ? "animate-in ml-auto bg-grad" : "animate-in border border-border bg-surface")}>
             {m.content}
             {m.role === "assistant" && m.provider && <p className="mt-2 text-[10px] uppercase tracking-wide text-muted">{m.provider === "rule-based" ? "Built-in coach" : "Claude"}</p>}
           </div>

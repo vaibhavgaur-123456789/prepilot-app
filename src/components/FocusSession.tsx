@@ -187,8 +187,9 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
           <p className="mt-1 max-w-md text-lg font-semibold">{t.title}</p>
           {task?.questionTarget ? <p className="text-sm text-muted">Target: {task.questionTarget} questions</p> : null}
         </div>
-        <div aria-live="polite">
-          <p className={cx("tabular text-7xl font-bold sm:text-8xl", onBreak && "text-success", overtime && "text-warning")} role="timer" aria-label={onBreak ? "Break time left" : t.mode === "TIMER" ? "Time left" : "Time elapsed"}>{clock}</p>
+        <div aria-live="polite" className="flex flex-col items-center">
+          <div className={cx("mb-4 h-3 w-3 rounded-full", t.phase === "running" ? "bg-grad animate-pulse-ring" : "bg-muted")} aria-hidden />
+          <p className={cx("tabular text-7xl font-bold sm:text-8xl", !onBreak && !overtime && t.phase === "running" && "text-grad", onBreak && "text-success", overtime && "text-warning")} role="timer" aria-label={onBreak ? "Break time left" : t.mode === "TIMER" ? "Time left" : "Time elapsed"}>{clock}</p>
           {overtime && <p className="mt-2 text-sm text-warning">Planned time reached (+{fmtClock(-remaining)}). Finish when ready.</p>}
           {onBreak && breakLeft <= 0 && <p className="mt-2 text-sm text-success">Break over. Ready to continue?</p>}
           <p className="mt-2 text-xs text-muted">Focused {fmtClock(act)} · breaks {fmtClock(brk)} · distractions {t.distractions}</p>
@@ -265,7 +266,7 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
 
   return (
     <div className="mx-auto max-w-lg space-y-4 px-4 py-10 text-center">
-      <p className="text-5xl">✅</p>
+      <p className="animate-pop text-6xl">✅</p>
       <h1 className="text-2xl font-bold">{tt("focus.saved")}</h1>
       {queued && <Alert tone="warning">You&apos;re offline. This session is saved on your device and will sync automatically.</Alert>}
       {result && (

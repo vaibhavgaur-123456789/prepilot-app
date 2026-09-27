@@ -5,15 +5,28 @@ import { createPortal } from "react-dom";
 import { useT } from "@/i18n/client";
 import { Button, cx } from "./ui";
 
-type Platform = "installed" | "prompt" | "ios" | "other";
+type Platform = "installed" | "prompt" | "ios" | "inapp-android" | "inapp-ios" | "samsung" | "other";
+
+// Browsers inside WhatsApp, Instagram, Facebook, Telegram etc. cannot install apps.
+const IN_APP = /FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Line\/|Telegram|Snapchat|; wv\)|GSA\//i;
 
 function detect(): Platform {
   if (typeof window === "undefined") return "other";
+  const ua = navigator.userAgent;
   const standalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
   if (standalone) return "installed";
   if (window.__ppInstall) return "prompt";
-  if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return "ios";
+  const ios = /iphone|ipad|ipod/i.test(ua);
+  if (IN_APP.test(ua)) return ios ? "inapp-ios" : "inapp-android";
+  if (ios) return "ios";
+  if (/SamsungBrowser/i.test(ua)) return "samsung";
   return "other";
+}
+
+/** Opens the current page in Chrome from an Android in-app browser. */
+function chromeIntentUrl() {
+  const { host, pathname, search } = window.location;
+  return `intent://${host}${pathname}${search}#Intent;scheme=https;package=com.android.chrome;end`;
 }
 
 /**
@@ -64,11 +77,27 @@ export function InstallButton({ variant = "button", className }: { variant?: "bu
         <div role="dialog" aria-modal aria-label={t("install.title")} className="fixed inset-0 z-50 grid place-items-end bg-black/40 sm:place-items-center" onClick={() => setHelp(false)}>
           <div className="w-full max-w-md rounded-t-2xl bg-surface p-5 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold">📲 {t("install.title")}</h2>
-            {platform === "ios" ? (
+            {platform === "inapp-android" ? (
+              <div className="mt-3 space-y-3 text-sm">
+                <p>{t("install.inapp")}</p>
+                <a href={chromeIntentUrl()} className="flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 font-semibold text-on-primary">{t("install.openChrome")}</a>
+                <p className="text-xs text-muted">{t("install.inappManual")}</p>
+              </div>
+            ) : platform === "inapp-ios" ? (
+              <div className="mt-3 space-y-2 text-sm">
+                <p>{t("install.inapp")}</p>
+                <p>{t("install.inappIos")}</p>
+              </div>
+            ) : platform === "ios" ? (
               <ol className="mt-3 list-inside list-decimal space-y-2 text-sm">
                 <li>{t("install.ios1")}</li>
                 <li>{t("install.ios2")}</li>
                 <li>{t("install.ios3")}</li>
+              </ol>
+            ) : platform === "samsung" ? (
+              <ol className="mt-3 list-inside list-decimal space-y-2 text-sm">
+                <li>{t("install.samsung1")}</li>
+                <li>{t("install.samsung2")}</li>
               </ol>
             ) : (
               <ol className="mt-3 list-inside list-decimal space-y-2 text-sm">

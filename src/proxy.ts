@@ -1,17 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyToken, SESSION_COOKIE } from "@/server/auth/session";
 
-const PUBLIC = ["/login", "/signup", "/offline"];
+// Pages anyone (and search engines) can open without signing in.
+const PUBLIC = ["/welcome", "/login", "/signup", "/offline", "/robots.txt", "/sitemap.xml", "/opengraph-image", "/twitter-image"];
 
-/** Redirect signed-out visitors to /login. Full session checks (revocation, roles) happen server-side per request. */
+/** Signed-out visitors: "/" shows the public landing page; other private pages go to /login. */
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isPublic = PUBLIC.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isPublic = PUBLIC.some((p) => pathname === p || pathname.startsWith(`${p}/`) || pathname.startsWith(`${p}?`));
   const sid = await verifyToken(req.cookies.get(SESSION_COOKIE)?.value);
   if (!sid && !isPublic) {
     const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = pathname === "/" ? "" : `?next=${encodeURIComponent(pathname)}`;
+    if (pathname === "/") {
+      url.pathname = "/welcome";
+      url.search = "";
+    } else {
+      url.pathname = "/login";
+      url.search = `?next=${encodeURIComponent(pathname)}`;
+    }
     return NextResponse.redirect(url);
   }
   if (sid && (pathname === "/login" || pathname === "/signup")) {

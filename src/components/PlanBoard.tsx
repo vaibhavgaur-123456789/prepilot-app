@@ -61,7 +61,7 @@ function Row({ t, onEdit, onSkip }: { t: Task; onEdit: () => void; onSkip: () =>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           {!done && t.status !== "SKIPPED" && (
-            <Link href={href} className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-on-primary" aria-label={`Start ${t.title}`}><PlayIcon width={18} height={18} /></Link>
+            <Link href={href} className="press bg-grad grid h-10 w-10 place-items-center rounded-xl" aria-label={`Start ${t.title}`}><PlayIcon width={18} height={18} /></Link>
           )}
           {t.status === "PENDING" && (
             <div className="flex gap-1">

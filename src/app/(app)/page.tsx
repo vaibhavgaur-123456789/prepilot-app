@@ -3,7 +3,7 @@ import { requireStudent } from "@/server/auth/guards";
 import { getHome } from "@/server/services/dashboard.service";
 import { formatMinutes } from "@/lib/engine/dates";
 import { getT } from "@/i18n/server";
-import { Alert, Badge, Card, CardTitle, LinkButton, Progress, Provenance, Stat } from "@/components/ui";
+import { Alert, Badge, Card, CardTitle, Progress, Provenance, Stat } from "@/components/ui";
 import { FlameIcon } from "@/components/icons";
 import { InstallButton } from "@/components/InstallButton";
 
@@ -28,23 +28,23 @@ export default async function HomePage() {
           <p className="text-sm text-muted">{greeting}, {h.user.firstName} 👋</p>
           <h1 className="text-2xl font-bold tracking-tight">{t("home.preparation", { exam: h.exam.shortName })}</h1>
         </div>
-        <div className="text-right">
-          <p className="tabular text-2xl font-bold">{h.exam.daysLeft}</p>
-          <p className="text-xs text-muted">{t("common.daysLeft")}</p>
+        <div className="animate-pop rounded-2xl bg-warm-soft px-3 py-1.5 text-right">
+          <p className="tabular text-2xl font-extrabold text-warm">{h.exam.daysLeft}</p>
+          <p className="text-[11px] font-semibold text-warm">{t("common.daysLeft")}</p>
         </div>
       </div>
 
       <InstallButton variant="banner" />
 
       {/* One-tap actions: start the study timer ("punch in"), attendance, alarms, own syllabus */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="stagger grid grid-cols-4 gap-2">
         {[
           { href: "/study/session/free?quick=1", icon: "⏱", label: t("quick.timer"), primary: true },
           { href: "/attendance", icon: "📅", label: t("quick.attendance") },
           { href: "/alarms", icon: "⏰", label: t("quick.alarm") },
           { href: "/syllabus", icon: "📚", label: t("quick.syllabus") },
         ].map((q) => (
-          <Link key={q.href} href={q.href} className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border p-2 text-center text-xs font-semibold ${q.primary ? "border-primary bg-primary text-on-primary" : "border-border bg-surface hover:bg-surface-2"}`}>
+          <Link key={q.href} href={q.href} className={`press lift flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border p-2 text-center text-xs font-semibold ${q.primary ? "bg-grad animate-pulse-ring border-transparent" : "border-border bg-surface"}`}>
             <span className="text-2xl" aria-hidden>{q.icon}</span>
             {q.label}
           </Link>
@@ -63,34 +63,37 @@ export default async function HomePage() {
       )}
 
       {/* NEXT ACTION: the answer to "what should I do now?" */}
-      <Card className="border-primary/30">
-        <CardTitle eyebrow={t("home.nextAction")}>{h.next ? h.next.title : t("home.planComplete")}</CardTitle>
+      <section className="animate-in bg-grad shadow-brand relative overflow-hidden rounded-3xl p-5">
+        <div className="animate-float pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-12 right-16 h-28 w-28 rounded-full bg-white/10" aria-hidden />
+        <p className="text-xs font-semibold uppercase tracking-wider text-white/80">{t("home.nextAction")}</p>
+        <h2 className="relative mt-1 text-xl font-bold leading-snug">{h.next ? h.next.title : t("home.planComplete")}</h2>
         {h.next ? (
           <>
-            <div className="flex flex-wrap items-center gap-2 text-sm text-muted">
-              <Badge tone="primary">{typeLabel[h.next.type]?.[lang] ?? h.next.type}</Badge>
-              <span>{h.next.plannedMinutes} {t("common.min")}</span>
+            <div className="relative mt-2 flex flex-wrap items-center gap-2 text-sm text-white/90">
+              <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold">{typeLabel[h.next.type]?.[lang] ?? h.next.type}</span>
+              <span>⏱ {h.next.plannedMinutes} {t("common.min")}</span>
               {h.next.questionTarget > 0 && <span>· {h.next.questionTarget} {t("common.questions")}</span>}
               {h.next.startTime && <span>· {h.next.startTime}</span>}
             </div>
-            {h.next.objective && <p className="mt-2 text-sm">{h.next.objective}</p>}
+            {h.next.objective && <p className="relative mt-2 text-sm text-white/90">{h.next.objective}</p>}
             {h.next.reasons.length > 0 && (
-              <details className="mt-2 text-sm">
-                <summary className="cursor-pointer text-muted">{t("home.why")}</summary>
-                <ul className="mt-1 list-inside list-disc text-muted">{h.next.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
+              <details className="relative mt-2 text-sm">
+                <summary className="cursor-pointer text-white/80">{t("home.why")}</summary>
+                <ul className="mt-1 list-inside list-disc text-white/85">{h.next.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
               </details>
             )}
-            <LinkButton href={nextHref} className="mt-4 w-full sm:w-auto">{t("home.startStudy")}</LinkButton>
+            <Link href={nextHref} className="press relative mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-white px-5 text-sm font-bold text-[#3b55e6] shadow-lg sm:w-auto">{t("home.startStudy")}</Link>
           </>
         ) : h.progress.tasksTotal === 0 && h.syllabusEmpty ? (
           <>
-            <p className="text-sm text-muted">{t("home.addChapters")}</p>
-            <LinkButton href="/syllabus" className="mt-3">📚 {t("quick.syllabus")}</LinkButton>
+            <p className="relative mt-2 text-sm text-white/90">{t("home.addChapters")}</p>
+            <Link href="/syllabus" className="press relative mt-3 inline-flex min-h-11 items-center rounded-xl bg-white px-4 text-sm font-bold text-[#3b55e6]">📚 {t("quick.syllabus")}</Link>
           </>
         ) : (
-          <p className="text-sm text-muted">{t("home.doneText")}</p>
+          <p className="relative mt-2 text-sm text-white/90">{t("home.doneText")}</p>
         )}
-      </Card>
+      </section>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -157,7 +160,7 @@ export default async function HomePage() {
         <Card>
           <CardTitle>{t("home.momentum")}</CardTitle>
           <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-warning-soft text-warning"><FlameIcon /></span>
+            <span className="bg-grad-warm grid h-12 w-12 place-items-center rounded-2xl shadow-lg"><FlameIcon className={h.xp.streak > 0 ? "animate-flame" : ""} /></span>
             <div>
               <p className="text-lg font-semibold">{t("home.streak", { n: h.xp.streak })}</p>
               <p className="text-xs text-muted">{t("home.bestStreak", { n: h.xp.bestStreak })}</p>

@@ -7,7 +7,7 @@ export function cx(...c: (string | false | null | undefined)[]) {
 
 export function Card({ className, children, ...rest }: ComponentProps<"section">) {
   return (
-    <section className={cx("rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow)] sm:p-5", className)} {...rest}>
+    <section className={cx("animate-in rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow)] sm:p-5", className)} {...rest}>
       {children}
     </section>
   );
@@ -27,12 +27,12 @@ export function CardTitle({ children, action, eyebrow }: { children: ReactNode; 
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-primary text-on-primary hover:bg-primary-strong",
+  primary: "bg-grad text-white shadow-[0_4px_14px_rgb(59_85_230/0.35)] hover:brightness-110",
   secondary: "border border-border bg-surface text-text hover:bg-surface-2",
   ghost: "text-primary hover:bg-primary-soft",
   danger: "bg-danger text-white hover:opacity-90",
 };
-const base = "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
+const base = "press inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50";
 
 export function Button({ variant = "primary", className, ...rest }: ComponentProps<"button"> & { variant?: Variant }) {
   return <button className={cx(base, variants[variant], className)} {...rest} />;
@@ -57,7 +57,7 @@ export function Badge({ tone = "neutral", children, className }: { tone?: Tone; 
 /** Progress bar. The value is always also shown as text, so meaning never depends on colour alone. */
 export function Progress({ value, max = 100, label, tone = "primary", showValue = true }: { value: number; max?: number; label: string; tone?: Tone; showValue?: boolean }) {
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
-  const bar = { neutral: "bg-muted", primary: "bg-primary", success: "bg-success", warning: "bg-warning", danger: "bg-danger" }[tone];
+  const bar = { neutral: "bg-muted", primary: "bg-grad", success: "bg-success", warning: "bg-warning", danger: "bg-danger" }[tone];
   return (
     <div>
       <div className="mb-1 flex justify-between text-xs text-muted">
@@ -65,7 +65,7 @@ export function Progress({ value, max = 100, label, tone = "primary", showValue 
         {showValue && <span className="tabular font-medium text-text">{Math.round(pct)}%</span>}
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-label={label} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
-        <div className={cx("h-full rounded-full transition-all", bar)} style={{ width: `${pct}%` }} />
+        <div className={cx("animate-grow-x h-full rounded-full transition-[width] duration-700", bar)} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -119,7 +119,7 @@ export function Provenance({ kind }: { kind: "measured" | "estimate" | "benchmar
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cx("animate-pulse rounded-xl bg-surface-2", className)} aria-hidden />;
+  return <div className={cx("skeleton rounded-xl", className)} aria-hidden />;
 }
 
 export const inputClass = "min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-text placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-[var(--ring)]";

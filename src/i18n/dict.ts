@@ -88,6 +88,10 @@ const en = {
   "install.ios1": "In Safari, tap the Share button ⬆️ at the bottom.", "install.ios2": "Scroll and tap “Add to Home Screen”.", "install.ios3": "Tap “Add”. Open PrepPilot from your home screen.",
   "install.android1": "Open this page in Chrome.", "install.android2": "Tap the ⋮ menu (top right).", "install.android3": "Tap “Install app” or “Add to Home screen”.",
   "install.note": "It installs like a normal app: its own icon, full screen and notifications, and it takes very little space.",
+  "install.inapp": "You opened this link inside another app (like WhatsApp or Instagram). Apps can't be installed from there, so open it in your browser first.",
+  "install.openChrome": "Open in Chrome", "install.inappManual": "If that doesn't work: tap ⋮ (top right) → “Open in browser” / “Open in Chrome”, then tap Install app.",
+  "install.inappIos": "Tap ••• or the compass icon → “Open in Safari”. Then Share ⬆️ → “Add to Home Screen”.",
+  "install.samsung1": "Tap the ≡ menu at the bottom.", "install.samsung2": "Tap “Add page to” → “Home screen” (or “Install”).",
   "tests.personalTitle": "Your own syllabus", "tests.personalText": "Ready-made mock tests are only available for listed exams. Track your study with ⏱ Timer, 📚 My syllabus, 📅 Attendance and ⏰ Alarms.",
 } as const;
 
@@ -181,6 +185,10 @@ const hi: Record<Key, string> = {
   "install.ios1": "Safari में नीचे Share बटन ⬆️ दबाएँ।", "install.ios2": "नीचे स्क्रॉल करके “Add to Home Screen” दबाएँ।", "install.ios3": "“Add” दबाएँ। अब होम स्क्रीन से PrepPilot खोलें।",
   "install.android1": "यह पेज Chrome में खोलें।", "install.android2": "ऊपर दाईं ओर ⋮ मेनू दबाएँ।", "install.android3": "“Install app” या “Add to Home screen” दबाएँ।",
   "install.note": "यह आम ऐप की तरह इंस्टॉल होता है: अपना आइकन, पूरी स्क्रीन और सूचनाएँ, और बहुत कम जगह लेता है।",
+  "install.inapp": "आपने यह लिंक किसी दूसरे ऐप (जैसे WhatsApp या Instagram) के अंदर खोला है। वहाँ से ऐप इंस्टॉल नहीं होता, इसलिए पहले इसे ब्राउज़र में खोलें।",
+  "install.openChrome": "Chrome में खोलें", "install.inappManual": "अगर ऐसे न खुले: ऊपर दाईं ओर ⋮ दबाएँ → “Open in browser” / “Open in Chrome”, फिर “Install app” दबाएँ।",
+  "install.inappIos": "••• या कम्पास आइकन दबाएँ → “Open in Safari”। फिर Share ⬆️ → “Add to Home Screen”।",
+  "install.samsung1": "नीचे ≡ मेनू दबाएँ।", "install.samsung2": "“Add page to” → “Home screen” (या “Install”) दबाएँ।",
   "tests.personalTitle": "आपका अपना सिलेबस", "tests.personalText": "तैयार मॉक टेस्ट सिर्फ लिस्ट वाले एग्ज़ाम के लिए हैं। अपनी पढ़ाई ⏱ टाइमर, 📚 मेरा सिलेबस, 📅 हाज़िरी और ⏰ अलार्म से ट्रैक करें।",
 };
 

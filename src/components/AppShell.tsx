@@ -54,7 +54,7 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border bg-surface p-4 md:flex">
         <Link href="/" className="mb-6 flex items-center gap-2 px-2 text-lg font-bold">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-on-primary">P</span>
+          <span className="bg-grad grid h-8 w-8 place-items-center rounded-lg shadow-brand">P</span>
           {BRAND.name}
         </Link>
         <nav aria-label="Main" className="flex flex-col gap-1">
@@ -86,7 +86,7 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] px-4 py-2.5 backdrop-blur md:px-8">
           <Link href="/" className="flex items-center gap-2 font-bold md:invisible" aria-label={BRAND.name}>
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary text-sm text-on-primary">P</span>
+            <span className="bg-grad grid h-7 w-7 place-items-center rounded-lg text-sm">P</span>
             <span className="hidden min-[420px]:inline">{BRAND.name}</span>
           </Link>
           <div className="flex items-center gap-0.5">
@@ -115,7 +115,8 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
       {/* Mobile bottom navigation */}
       <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         {NAV.map(({ href, label, Icon }) => (
-          <Link key={href} href={href} aria-current={active(href) ? "page" : undefined} className={cx("flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium", active(href) ? "text-primary" : "text-muted")}>
+          <Link key={href} href={href} aria-current={active(href) ? "page" : undefined} className={cx("press relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium", active(href) ? "text-primary" : "text-muted")}>
+            {active(href) && <span className="bg-grad absolute top-0 h-1 w-8 rounded-b-full animate-pop" aria-hidden />}
             <Icon width={21} height={21} />
             {t(label)}
           </Link>
