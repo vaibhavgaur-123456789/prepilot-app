@@ -13,6 +13,8 @@ type Exam = {
   benchmarks: { id: string; metric: string; value: number; p25: number | null; p75: number | null; source: string; sampleSize: number }[];
   mocks: { id: string; title: string; type: string; durationMinutes: number; _count: { questions: number } }[];
 };
+const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+
 type Question = { id: string; stem: string; options: string[]; correctIndex: number; explanation: string; difficulty: number; expectedSeconds: number; isActive: boolean };
 
 export function AdminExamEditor({ exam, topicId, questions }: { exam: Exam; topicId: string | null; questions: Question[] }) {
@@ -36,6 +38,24 @@ export function AdminExamEditor({ exam, topicId, questions }: { exam: Exam; topi
     <div className="space-y-4">
       <PageHeader title={exam.name} subtitle={`${exam.durationMinutes} min · ${exam.marksPerQuestion} marks/question · −${exam.negativeMarking} negative`} action={<Button variant="secondary" onClick={() => op({ op: "exam.update", id: exam.id, data: { isActive: !exam.isActive } }, exam.isActive ? "Exam hidden from onboarding." : "Exam activated.")}>{exam.isActive ? "Deactivate" : "Activate"}</Button>} />
       {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}
+      {!exam.isActive && <Alert tone="warning" title="Hidden from students">This exam isn&apos;t offered in onboarding yet. Add subjects, topics and questions, build tests, then press Activate.</Alert>}
+
+      <Card>
+        <CardTitle>Add a subject</CardTitle>
+        <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => {
+          e.preventDefault();
+          const f = new FormData(e.currentTarget);
+          const name = String(f.get("name") ?? "").trim();
+          op({ op: "subject.create", examId: exam.id, data: { name, slug: slugify(name) || `s-${Date.now().toString(36)}`, weightage: Number(f.get("weightage") || 1), isQuantitative: f.get("quant") === "on", isMemoryBased: f.get("memory") === "on" } }, `Subject "${name}" added.`);
+          e.currentTarget.reset();
+        }}>
+          <label className="block flex-1"><span className="mb-1 block text-xs font-medium">Name</span><input name="name" required minLength={2} maxLength={80} className={inputClass} placeholder="e.g. Mathematics" /></label>
+          <label className="block w-28"><span className="mb-1 block text-xs font-medium">Weight (marks)</span><input name="weightage" type="number" min={0} max={100} defaultValue={25} className={inputClass} /></label>
+          <label className="flex items-center gap-1 text-xs"><input name="quant" type="checkbox" /> Calculation-based</label>
+          <label className="flex items-center gap-1 text-xs"><input name="memory" type="checkbox" /> Memory/GK-based</label>
+          <Button type="submit">Add subject</Button>
+        </form>
+      </Card>
 
       <Card>
         <CardTitle>Syllabus: weightage & difficulty (1–5)</CardTitle>
@@ -61,8 +81,22 @@ export function AdminExamEditor({ exam, topicId, questions }: { exam: Exam; topi
                 </tbody>
               </table>
             </div>
+            <form className="mt-2 flex flex-wrap items-end gap-2" onSubmit={(e) => {
+              e.preventDefault();
+              const f = new FormData(e.currentTarget);
+              const name = String(f.get("name") ?? "").trim();
+              op({ op: "topic.upsert", data: { subjectId: s.id, name, slug: slugify(name) || `t-${Date.now().toString(36)}`, weightage: Number(f.get("weightage") || 3), difficulty: Number(f.get("difficulty") || 3), estimatedMinutes: Number(f.get("minutes") || 180), parentId: null } }, `Topic "${name}" added to ${s.name}.`);
+              e.currentTarget.reset();
+            }}>
+              <input name="name" required minLength={2} maxLength={80} aria-label={`New topic in ${s.name}`} className={`${inputClass} min-h-9 flex-1`} placeholder={`New topic in ${s.name}`} />
+              <input name="weightage" type="number" min={1} max={5} defaultValue={3} aria-label="Weight 1-5" title="Importance 1–5" className="h-9 w-16 rounded-lg border border-border bg-surface px-2" />
+              <input name="difficulty" type="number" min={1} max={5} defaultValue={3} aria-label="Difficulty 1-5" title="Difficulty 1–5" className="h-9 w-16 rounded-lg border border-border bg-surface px-2" />
+              <input name="minutes" type="number" min={15} max={3000} defaultValue={180} aria-label="Study minutes" title="Minutes to learn" className="h-9 w-20 rounded-lg border border-border bg-surface px-2" />
+              <Button type="submit" variant="secondary">Add topic</Button>
+            </form>
           </div>
         ))}
+        {exam.subjects.length === 0 && <p className="text-sm text-muted">No subjects yet. Add one above.</p>}
       </Card>
 
       {topic && (
@@ -110,7 +144,8 @@ export function AdminExamEditor({ exam, topicId, questions }: { exam: Exam; topi
       </Card>
 
       <Card>
-        <CardTitle>Official mocks</CardTitle>
+        <CardTitle action={<Button variant="secondary" onClick={() => op({ op: "mocks.build", examId: exam.id }, "Tests rebuilt from the question bank.")}>Build / refresh tests</Button>}>Official mocks</CardTitle>
+        <p className="mb-2 text-xs text-muted">Builds a full mock (following the exam pattern), a sectional test per subject and a baseline diagnostic from the questions above. Tests students already took are kept.</p>
         <ul className="text-sm">{exam.mocks.map((m) => <li key={m.id} className="py-1">{m.title} · {m.type.toLowerCase()} · {m._count.questions} q · {m.durationMinutes} min</li>)}</ul>
       </Card>
     </div>

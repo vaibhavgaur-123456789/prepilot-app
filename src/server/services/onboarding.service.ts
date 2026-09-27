@@ -123,7 +123,17 @@ export async function completeOnboarding(userId: string, input: OnboardingInput,
     revisionScheduled: completed.length,
   };
 
+  // Switching to a different exam: old-exam carry-overs and unstarted tasks must not leak into the new plan.
+  const previous = await prisma.studentProfile.findUnique({ where: { userId }, select: { examId: true } });
+  const switching = !!previous && previous.examId !== exam.id;
+
   await prisma.$transaction(async (tx) => {
+    if (switching) {
+      await tx.task.updateMany({ where: { userId, carryConsumed: false, missedAction: { not: null } }, data: { carryConsumed: true, missedReason: "Archived: you switched exams." } });
+      await tx.task.deleteMany({ where: { userId, date: { gte: today }, status: "PENDING", actualMinutes: 0 } });
+      await tx.planDay.deleteMany({ where: { userId, date: { gte: today } } });
+      await tx.studentProfile.update({ where: { userId }, data: { recoveryMode: false, recoveryManual: false, recoverySince: null } });
+    }
     await tx.user.update({ where: { id: userId }, data: { name: input.name, ageRange: input.ageRange ?? null, language: input.language, benchmarkOptIn: input.benchmarkOptIn, timezone, onboardedAt: now } });
     const profileData = {
       examId: exam.id,
@@ -175,6 +185,6 @@ export async function completeOnboarding(userId: string, input: OnboardingInput,
   baseline.coveragePct = readiness.components.find((c) => c.key === "coverage")?.value ?? 0;
   await prisma.studentProfile.update({ where: { userId }, data: { baseline: toJson(baseline) } });
   const plan = await ensureDayPlan(userId, { now, force: true });
-  await trackEvent(userId, "onboarding_complete", { exam: exam.slug, daysLeft });
+  await trackEvent(userId, switching ? "exam_changed" : "onboarding_complete", { exam: exam.slug, daysLeft });
   return { baseline, readiness, plan };
 }

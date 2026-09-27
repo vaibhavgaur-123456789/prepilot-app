@@ -81,8 +81,8 @@ export async function paceFor(ctx: StudentContext, now = new Date()) {
     syllabusCoverage(user.id, profile.examId),
     prisma.userTopicState.findMany({ where: { userId: user.id, status: "COMPLETED", completedAt: { gte: new Date(now.getTime() - 14 * 86_400_000) } }, include: { topic: { select: { weightage: true } } } }),
     prisma.dailyStat.aggregate({ where: { userId: user.id, date: { gte: addDays(today, -13), lte: today } }, _sum: { questions: true } }),
-    prisma.mockAttempt.count({ where: { userId: user.id, status: "SUBMITTED", submittedAt: { gte: new Date(now.getTime() - 28 * 86_400_000) }, mock: { type: { in: ["FULL", "SECTIONAL"] } } } }),
-    prisma.mockAttempt.findFirst({ where: { userId: user.id, status: "SUBMITTED", mock: { type: { in: ["FULL", "SECTIONAL"] } } }, orderBy: { submittedAt: "desc" } }),
+    prisma.mockAttempt.count({ where: { userId: user.id, status: "SUBMITTED", submittedAt: { gte: new Date(now.getTime() - 28 * 86_400_000) }, mock: { examId: profile.examId, type: { in: ["FULL", "SECTIONAL"] } } } }),
+    prisma.mockAttempt.findFirst({ where: { userId: user.id, status: "SUBMITTED", mock: { examId: profile.examId, type: { in: ["FULL", "SECTIONAL"] } } }, orderBy: { submittedAt: "desc" } }),
   ]);
   return computePace({
     today,

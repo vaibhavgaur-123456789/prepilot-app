@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listExamsAdmin, productMetrics, recentAudit } from "@/server/services/admin.service";
 import { openFeedbackCount } from "@/server/services/feedback.service";
+import { AdminNewExam } from "@/components/AdminNewExam";
 import { Badge, Card, CardTitle, PageHeader, Stat } from "@/components/ui";
 
 export const metadata = { title: "Admin" };
@@ -50,6 +51,7 @@ export default async function AdminPage() {
           ))}
         </ul>
       </Card>
+      <AdminNewExam />
       <Card>
         <CardTitle>Recent content changes</CardTitle>
         {audit.length === 0 ? <p className="text-sm text-muted">No changes yet.</p> : <ul className="space-y-1 text-xs text-muted">{audit.map((a) => <li key={a.id}>{a.createdAt.toISOString().slice(0, 16).replace("T", " ")} · {a.action} {a.entity} {a.entityId.slice(0, 8)}</li>)}</ul>}

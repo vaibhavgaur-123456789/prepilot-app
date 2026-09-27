@@ -39,20 +39,21 @@ function Chip({ on, onClick, children, label }: { on: boolean; onClick: () => vo
   );
 }
 
-export function OnboardingWizard({ exams, defaultName }: { exams: Exam[]; defaultName: string }) {
+export function OnboardingWizard({ exams, defaultName, changing = false, current = null }: { exams: Exam[]; defaultName: string; changing?: boolean; current?: { examId: string; examDate: string; dailyMinutes: number } | null }) {
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(changing ? 1 : 0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ baseline: Baseline; readiness: { score: number; confidence: string } } | null>(null);
 
   const [name, setName] = useState(defaultName);
   const [ageRange, setAgeRange] = useState<string | null>(null);
-  const [examId, setExamId] = useState(exams[0]?.id ?? "");
-  const [examDate, setExamDate] = useState(addMonths(3));
+  // When changing exams, nothing is preselected so a real choice is made.
+  const [examId, setExamId] = useState(changing ? "" : exams[0]?.id ?? "");
+  const [examDate, setExamDate] = useState(current?.examDate ?? addMonths(3));
   const [targetScore, setTargetScore] = useState("");
   const [prepLevel, setPrepLevel] = useState("BEGINNER");
-  const [dailyMinutes, setDailyMinutes] = useState(180);
+  const [dailyMinutes, setDailyMinutes] = useState(current?.dailyMinutes ?? 180);
   const [slots, setSlots] = useState<string[]>(["MORNING", "EVENING"]);
   const [dailyGoal, setDailyGoal] = useState<number | null>(null);
   const [weeklyGoal, setWeeklyGoal] = useState<number | null>(null);
@@ -171,6 +172,14 @@ export function OnboardingWizard({ exams, defaultName }: { exams: Exam[]; defaul
   const optional = step >= 3 && step <= 5;
   return (
     <div>
+      {changing && (
+        <div className="mb-4">
+          <Alert tone="warning" title="Changing your exam">
+            Choose the exam you&apos;re preparing for now. Your plan, goals, revision schedule and readiness will be rebuilt for it. Your study history, XP and badges stay.{" "}
+            <a href="/profile" className="font-semibold underline">Cancel</a>
+          </Alert>
+        </div>
+      )}
       <div className="mb-4">
         <p className="text-sm text-muted">Step {step + 1} of {STEPS.length}</p>
         <h1 className="text-2xl font-bold">{STEPS[step]}</h1>

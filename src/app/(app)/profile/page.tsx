@@ -36,6 +36,11 @@ export default async function ProfilePage() {
       </div>
 
       <Card>
+        <CardTitle action={<Link href="/onboarding?change=1" className="text-sm font-semibold text-primary">Change exam →</Link>} eyebrow="Preparing for">{ctx.exam.name}</CardTitle>
+        <p className="text-sm text-muted">Exam date {ctx.profile.examDate}. Switched to a different exam? Change it here and your plan is rebuilt for the new syllabus.</p>
+      </Card>
+
+      <Card>
         <CardTitle>Goals (exam → month → week → today)</CardTitle>
         <div className="space-y-3">
           {goals.map((g) => (

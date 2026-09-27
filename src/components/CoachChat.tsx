@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/client/api";
 import { Alert, Badge, Button, cx, inputClass, PageHeader } from "./ui";
+import { useT } from "@/i18n/client";
 
 type Msg = { role: "user" | "assistant"; content: string; provider?: string | null };
 const SUGGESTIONS = ["What should I study today?", "I missed yesterday. What should I do?", "I have only 2 hours today.", "My Maths score is falling.", "Why am I getting questions wrong?", "Create a revision plan.", "Analyze my last mock.", "How ready am I?"];
 
 export function CoachChat({ conversationId: initialId, initial, mode }: { conversationId: string | null; initial: Msg[]; mode: "llm" | "rules" }) {
+  const t = useT();
   const [id, setId] = useState(initialId);
   const [msgs, setMsgs] = useState<Msg[]>(initial);
   const [text, setText] = useState("");
@@ -15,7 +17,10 @@ export function CoachChat({ conversationId: initialId, initial, mode }: { conver
   const [error, setError] = useState<string | null>(null);
   const end = useRef<HTMLDivElement>(null);
 
-  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [msgs]);
+  // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect may only return a cleanup function.
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: "smooth" });
+  }, [msgs]);
 
   async function send(message: string) {
     if (!message.trim() || busy) return;
@@ -36,7 +41,7 @@ export function CoachChat({ conversationId: initialId, initial, mode }: { conver
 
   return (
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col">
-      <PageHeader title="AI Coach" subtitle="Answers use your actual plan, study history, mocks, weak topics and revision schedule." action={<Badge tone={mode === "llm" ? "primary" : "neutral"}>{mode === "llm" ? "Claude-powered" : "Built-in data coach"}</Badge>} />
+      <PageHeader title={t("coach.title")}subtitle="Answers use your actual plan, study history, mocks, weak topics and revision schedule." action={<Badge tone={mode === "llm" ? "primary" : "neutral"}>{mode === "llm" ? "Claude-powered" : "Built-in data coach"}</Badge>} />
       {mode === "rules" && <p className="-mt-2 mb-3 text-xs text-muted">No AI key is configured, so the built-in coach answers from your data with fixed rules. Add ANTHROPIC_API_KEY to enable conversational answers.</p>}
       <div className="flex-1 space-y-3" aria-live="polite">
         {msgs.length === 0 && (
@@ -57,8 +62,8 @@ export function CoachChat({ conversationId: initialId, initial, mode }: { conver
       </div>
       <form className="sticky bottom-20 flex gap-2 md:bottom-4" onSubmit={(e) => { e.preventDefault(); send(text); }}>
         <label className="sr-only" htmlFor="coach-input">Message</label>
-        <input id="coach-input" className={inputClass} placeholder="Ask your coach…" value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} />
-        <Button type="submit" disabled={busy || !text.trim()}>Send</Button>
+        <input id="coach-input" className={inputClass} placeholder={t("coach.placeholder")} value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} />
+        <Button type="submit" disabled={busy || !text.trim()}>{t("coach.send")}</Button>
       </form>
     </div>
   );

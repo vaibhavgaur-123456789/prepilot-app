@@ -31,11 +31,11 @@ export async function refreshReadiness(userId: string, now = new Date()): Promis
 
   const [cov, mocks, stats30, rev, allStats, totalMocks] = await Promise.all([
     syllabusCoverage(userId, profile.examId),
-    prisma.mockAttempt.findMany({ where: { userId, status: "SUBMITTED", mock: { type: { in: ["FULL", "SECTIONAL"] } } }, orderBy: { submittedAt: "asc" }, select: { percent: true } }),
+    prisma.mockAttempt.findMany({ where: { userId, status: "SUBMITTED", mock: { examId: profile.examId, type: { in: ["FULL", "SECTIONAL"] } } }, orderBy: { submittedAt: "asc" }, select: { percent: true } }),
     prisma.dailyStat.findMany({ where: { userId, date: { gte: addDays(today, -29), lte: today } } }),
     revisionHealth(userId, today),
     prisma.dailyStat.aggregate({ where: { userId }, _sum: { questions: true } }),
-    prisma.mockAttempt.count({ where: { userId, status: "SUBMITTED" } }),
+    prisma.mockAttempt.count({ where: { userId, status: "SUBMITTED", mock: { examId: profile.examId } } }),
   ]);
 
   const attempts30 = stats30.reduce((s, d) => s + d.questions, 0);

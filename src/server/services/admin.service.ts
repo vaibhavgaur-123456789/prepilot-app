@@ -84,7 +84,8 @@ export async function updateExam(actorId: string, id: string, patch: { name?: st
 }
 
 export async function createExam(actorId: string, input: { slug: string; name: string; shortName: string; category: string; durationMinutes: number; totalQuestions: number; marksPerQuestion: number; negativeMarking: number }) {
-  const e = await prisma.exam.create({ data: input });
+  // Starts hidden from students; the admin activates it once subjects, topics and questions are in.
+  const e = await prisma.exam.create({ data: { ...input, isActive: false } });
   await audit(actorId, "create", "Exam", e.id, input);
   return e;
 }
@@ -127,6 +128,48 @@ export async function updateBenchmark(actorId: string, id: string, patch: { valu
   const r = await prisma.benchmarkStat.update({ where: { id }, data: { ...patch, computedAt: new Date() } });
   await audit(actorId, "update", "BenchmarkStat", id, patch);
   return r;
+}
+
+/**
+ * (Re)build an exam's official tests from its question bank: one full mock sized to the exam pattern
+ * (split across subjects by weightage), one sectional test per subject, and a short diagnostic.
+ * Tests that students already attempted are kept; unattempted official tests are replaced.
+ */
+export async function buildMocks(actorId: string, examId: string) {
+  const exam = await prisma.exam.findUnique({ where: { id: examId }, include: { subjects: { orderBy: { order: "asc" }, include: { topics: { include: { questions: { where: { isActive: true }, select: { id: true } } } } } } } });
+  if (!exam) throw notFound("Exam");
+  const pools = exam.subjects
+    .map((s) => {
+      // Interleave topics so each test mixes them evenly.
+      const lists = s.topics.map((t) => t.questions.map((q) => q.id));
+      const out: string[] = [];
+      for (let i = 0; i < Math.max(0, ...lists.map((l) => l.length)); i++) for (const l of lists) if (i < l.length) out.push(l[i]);
+      return { subject: s, ids: out };
+    })
+    .filter((p) => p.ids.length > 0);
+  const total = pools.reduce((s, p) => s + p.ids.length, 0);
+  if (total < 5) throw badRequest("Add at least 5 questions to this exam before building tests.");
+
+  await prisma.mock.deleteMany({ where: { examId, createdById: null, attempts: { none: {} } } });
+  const make = async (title: string, type: string, durationMinutes: number, ids: string[]) => {
+    const unique = [...new Set(ids)];
+    if (!unique.length) return 0;
+    const m = await prisma.mock.create({ data: { examId, title, type, durationMinutes: Math.max(5, durationMinutes) } });
+    await prisma.mockQuestion.createMany({ data: unique.map((questionId, order) => ({ mockId: m.id, questionId, order, marks: exam.marksPerQuestion })) });
+    return 1;
+  };
+  const weightSum = pools.reduce((s, p) => s + (p.subject.weightage || 1), 0);
+  const target = Math.min(exam.totalQuestions, total);
+  const full = pools.flatMap((p) => p.ids.slice(0, Math.max(1, Math.round((target * (p.subject.weightage || 1)) / weightSum))));
+  let created = await make(`${exam.shortName} Full Mock`, "FULL", Math.round((exam.durationMinutes * full.length) / Math.max(1, exam.totalQuestions)), full);
+  for (const p of pools) {
+    const ids = p.ids.slice(0, 25);
+    created += await make(`${exam.shortName} Sectional: ${p.subject.name}`, "SECTIONAL", Math.round((exam.durationMinutes * ids.length) / Math.max(1, exam.totalQuestions)), ids);
+  }
+  const diag = pools.flatMap((p) => p.ids.slice(0, 4));
+  created += await make(`${exam.shortName} Baseline Diagnostic`, "DIAGNOSTIC", diag.length, diag);
+  await audit(actorId, "build", "Mocks", examId, { created, questions: total });
+  return { created, questions: total };
 }
 
 export async function recentAudit() {
