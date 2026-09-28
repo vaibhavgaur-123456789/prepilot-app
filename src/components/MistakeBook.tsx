@@ -74,7 +74,7 @@ export function MistakeBook({ items: initial }: { items: Item[] }) {
   const [items, setItems] = useState(initial);
   const [filter, setFilter] = useState<"OPEN" | "ALL" | MistakeCategory>("OPEN");
   const shown = useMemo(() => items.filter((m) => (filter === "OPEN" ? !m.resolved : filter === "ALL" ? true : m.category === filter)), [items, filter]);
-  if (items.length === 0) return <EmptyState title="Your mistake book is empty">Wrong answers from mocks and topic tests appear here automatically.</EmptyState>;
+  if (items.length === 0) return <EmptyState title="Your mistake book is empty">Nothing to re-solve right now.</EmptyState>;
   return (
     <Card>
       <div className="mb-3 flex gap-2 overflow-x-auto pb-1">

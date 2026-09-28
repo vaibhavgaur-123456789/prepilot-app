@@ -1,4 +1,4 @@
-# PrepPilot ko live kaise karein (step-by-step)
+# RozPadh (pehle PrepPilot) ko live kaise karein (step-by-step)
 
 Is guide ke end mein aapki app ek public link pe chalegi (jaise `preppilot.vercel.app`). Koi bhi use khol kar **phone pe install** kar sakega, aur aap jab chahein badlav kar sakenge.
 

@@ -1,4 +1,4 @@
-# PrepPilot — Implementation Plan
+# RozPadh (formerly PrepPilot) — Implementation Plan
 
 Status legend: ✅ done · 🟡 partial (see notes) · ⏳ not started
 

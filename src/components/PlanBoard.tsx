@@ -31,7 +31,7 @@ function Row({ t, onEdit, onSkip }: { t: Task; onEdit: () => void; onSkip: () =>
   const style = { transform: CSS.Transform.toString(transform), transition };
   const end = t.startTime ? toHHMM(toMinutes(t.startTime) + t.plannedMinutes) : null;
   const done = t.status === "DONE";
-  const href = t.type === "MOCK" && t.mockId ? `/tests/start/${t.mockId}` : t.type === "MOCK_ANALYSIS" ? "/tests" : `/study/session/${t.id}`;
+  const href = t.type === "MOCK" || t.type === "MOCK_ANALYSIS" ? "/tests" : `/study/session/${t.id}`;
   return (
     <li ref={setNodeRef} style={style} className={cx("rounded-xl border border-border bg-surface p-3", isDragging && "z-10 shadow-lg", (done || t.status === "SKIPPED") && "opacity-70")}>
       <div className="flex items-start gap-2">

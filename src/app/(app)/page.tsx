@@ -6,6 +6,7 @@ import { getT } from "@/i18n/server";
 import { Alert, Badge, Card, CardTitle, Progress, Provenance, Stat } from "@/components/ui";
 import { FlameIcon } from "@/components/icons";
 import { InstallButton } from "@/components/InstallButton";
+import { ShareProgress } from "@/components/ShareProgress";
 
 export const metadata = { title: "Home" };
 
@@ -18,7 +19,7 @@ export default async function HomePage() {
   const user = await requireStudent();
   const [h, { t, lang }] = await Promise.all([getHome(user.id), getT()]);
   const pct = h.progress.plannedMinutes > 0 ? Math.min(100, Math.round((h.progress.actualMinutes / h.progress.plannedMinutes) * 100)) : 0;
-  const nextHref = h.next ? (h.next.type === "MOCK" && h.next.mockId ? `/tests/start/${h.next.mockId}` : h.next.type === "MOCK_ANALYSIS" ? "/tests" : `/study/session/${h.next.id}`) : "/study";
+  const nextHref = h.next ? (h.next.type === "MOCK" || h.next.type === "MOCK_ANALYSIS" ? "/tests" : `/study/session/${h.next.id}`) : "/study";
   const greeting = h.briefing.greeting === "Good morning" ? t("home.greeting.morning") : h.briefing.greeting === "Good afternoon" ? t("home.greeting.afternoon") : t("home.greeting.evening");
 
   return (
@@ -43,6 +44,10 @@ export default async function HomePage() {
           { href: "/attendance", icon: "📅", label: t("quick.attendance") },
           { href: "/alarms", icon: "⏰", label: t("quick.alarm") },
           { href: "/syllabus", icon: "📚", label: t("quick.syllabus") },
+          { href: "/tests", icon: "📝", label: t("paper.title") },
+          { href: "/shayari", icon: "✨", label: t("quick.shayari") },
+          { href: "/coach", icon: "🤖", label: t("nav.coach") },
+          { href: "/help", icon: "❓", label: t("nav.howto") },
         ].map((q) => (
           <Link key={q.href} href={q.href} className={`press lift flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border p-2 text-center text-xs font-semibold ${q.primary ? "bg-grad animate-pulse-ring border-transparent" : "border-border bg-surface"}`}>
             <span className="text-2xl" aria-hidden>{q.icon}</span>
@@ -161,10 +166,11 @@ export default async function HomePage() {
           <CardTitle>{t("home.momentum")}</CardTitle>
           <div className="flex items-center gap-3">
             <span className="bg-grad-warm grid h-12 w-12 place-items-center rounded-2xl shadow-lg"><FlameIcon className={h.xp.streak > 0 ? "animate-flame" : ""} /></span>
-            <div>
+            <div className="flex-1">
               <p className="text-lg font-semibold">{t("home.streak", { n: h.xp.streak })}</p>
               <p className="text-xs text-muted">{t("home.bestStreak", { n: h.xp.bestStreak })}</p>
             </div>
+            <ShareProgress text={t("track.shareText", { m: formatMinutes(h.progress.actualMinutes), s: h.xp.streak })} label={t("track.share")} />
           </div>
           <div className="mt-4 space-y-3">
             <Progress value={h.nextMilestone.progress} max={h.nextMilestone.at} label={`${t("home.nextMilestone")}: ${h.nextMilestone.label}`} showValue={false} />

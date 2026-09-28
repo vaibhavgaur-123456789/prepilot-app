@@ -5,19 +5,20 @@ import { computeDailyScore } from "@/lib/engine/scoring";
 
 /** Rebuild the DailyStat snapshot for one day from raw facts (tasks, sessions, mocks). Idempotent. */
 export async function recomputeDailyStat(userId: string, date: string, tz: string) {
-  const [tasks, sessions, mocks] = await Promise.all([
+  const around = { gte: new Date(Date.parse(`${addDays(date, -1)}T00:00:00Z`)), lt: new Date(Date.parse(`${addDays(date, 2)}T00:00:00Z`)) };
+  const [tasks, sessions, mocks, papers] = await Promise.all([
     prisma.task.findMany({ where: { userId, date } }),
     prisma.studySession.findMany({ where: { userId, date, status: "COMPLETED" } }),
-    prisma.mockAttempt.findMany({
-      where: { userId, status: "SUBMITTED", submittedAt: { gte: new Date(Date.parse(`${addDays(date, -1)}T00:00:00Z`)), lt: new Date(Date.parse(`${addDays(date, 2)}T00:00:00Z`)) } },
-    }),
+    prisma.mockAttempt.findMany({ where: { userId, status: "SUBMITTED", submittedAt: around } }),
+    prisma.paperLog.findMany({ where: { userId, endedAt: around } }),
   ]);
   const dayMocks = mocks.filter((m) => m.submittedAt && dayKey(m.submittedAt, tz) === date);
+  const dayPapers = papers.filter((p) => dayKey(p.endedAt, tz) === date);
 
   const active = tasks.filter((t) => t.status !== "SKIPPED" && !t.isOptional);
   const plannedMinutes = active.reduce((s, t) => s + t.plannedMinutes, 0);
   const sessionMinutes = Math.round(sessions.reduce((s, x) => s + x.activeSeconds, 0) / 60);
-  const mockMinutes = Math.round(dayMocks.reduce((s, m) => s + m.timeTakenSec, 0) / 60);
+  const mockMinutes = Math.round((dayMocks.reduce((s, m) => s + m.timeTakenSec, 0) + dayPapers.reduce((s, p) => s + p.activeSeconds, 0)) / 60);
   const actualMinutes = sessionMinutes + mockMinutes;
   const tasksDone = active.filter((t) => t.status === "DONE").length;
   const questions = sessions.reduce((s, x) => s + x.questionsAttempted, 0) + dayMocks.reduce((s, m) => s + m.correct + m.wrong, 0);
@@ -37,7 +38,7 @@ export async function recomputeDailyStat(userId: string, date: string, tz: strin
     revisionsDue: revTasks.length,
     revisionsDone: revTasks.filter((t) => t.status === "DONE").length,
     testPlanned: mockTasks.length > 0,
-    testDone: dayMocks.length > 0 || mockTasks.some((t) => t.status === "DONE"),
+    testDone: dayMocks.length > 0 || dayPapers.length > 0 || mockTasks.some((t) => t.status === "DONE"),
     questions,
     correct,
   });
@@ -51,7 +52,7 @@ export async function recomputeDailyStat(userId: string, date: string, tz: strin
     correct,
     revisionsDue: revTasks.length,
     revisionsDone: revTasks.filter((t) => t.status === "DONE").length,
-    mocksTaken: dayMocks.length,
+    mocksTaken: dayMocks.length + dayPapers.length,
     focusAvg: focusRatings.length ? focusRatings.reduce((a, b) => a + b, 0) / focusRatings.length : null,
     distractions,
     executionScore: score.execution,

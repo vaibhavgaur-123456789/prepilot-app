@@ -9,7 +9,7 @@ import { getLang } from "@/i18n/server";
 const SITE_URL = process.env.APP_URL || "https://prepilot-app.vercel.app";
 const SEO_TITLE = `${BRAND.name}: Free study planner, timer & attendance for SSC, Railway, Banking and board exams`;
 const SEO_DESC =
-  "Free exam preparation app in Hindi and English. Daily study plan, focus timer, attendance calendar, study alarms, spaced revision, mock tests and progress tracking for SSC, Railway, Banking, state exams, school boards or your own syllabus.";
+  "Free exam preparation app in Hindi and English. Daily study plan, focus timer, attendance calendar, study alarms, spaced revision, a paper timer for mock and previous year papers, motivational shayari and progress tracking for SSC, Railway, Banking, state exams, school boards or your own syllabus.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   applicationName: BRAND.name,
   keywords: [
     "study planner", "exam preparation app", "SSC CGL preparation", "RRB NTPC preparation", "IBPS PO preparation", "study timer", "pomodoro timer",
-    "attendance tracker for students", "revision planner", "mock test", "Hindi study app", "padhai ka time table", "पढ़ाई का टाइम टेबल", "प्रतियोगी परीक्षा तैयारी",
+    "attendance tracker for students", "revision planner", "mock paper timer", "study tracker", "motivational shayari for students", "Hindi study app", "padhai ka time table", "पढ़ाई का टाइम टेबल", "प्रतियोगी परीक्षा तैयारी",
   ],
   alternates: { canonical: "/" },
   openGraph: {

@@ -10,6 +10,8 @@ import { revisionQueue } from "@/server/services/revision.service";
 import { readinessHistory } from "@/server/services/readiness.service";
 import { xpSummary } from "@/server/services/gamification.service";
 import { createSession, resolveSession, destroySession } from "@/server/auth/session";
+import { listPapers, savePaper } from "@/server/services/paper.service";
+import { adminAddShayari, allShayari } from "@/server/services/shayari.service";
 import { addDays, dayKey } from "@/lib/engine/dates";
 
 // A fixed "now": 08:00 IST on a Monday.
@@ -157,14 +159,16 @@ describe("core journey", () => {
     expect(hist.at(-1)!.components.mock).not.toBeNull();
   });
 
-  it("revision is due the next day and tomorrow's plan adapts (mock analysis + revision + carry-over)", async () => {
+  it("revision is due the next day and tomorrow's plan adapts (revision + carry-over, no in-app mocks)", async () => {
     const tomorrow = at(NOW, 24 * 60);
     const q = await revisionQueue(userId, examId, dayKey(tomorrow));
     expect(q.some((r) => r.due)).toBe(true);
     const plan = await ensureDayPlan(userId, { now: tomorrow });
     const types = plan.tasks.map((t) => t.type);
     expect(types).toContain("REVISION");
-    expect(types).toContain("MOCK_ANALYSIS");
+    // In-app MCQ mocks were replaced by the Paper timer, so the planner never schedules mocks or their analysis.
+    expect(types).not.toContain("MOCK");
+    expect(types).not.toContain("MOCK_ANALYSIS");
     // Yesterday's untouched tasks were triaged, not deleted.
     const yesterday = await prisma.task.findMany({ where: { userId, date: dayKey(NOW), status: { in: ["MISSED", "PARTIAL"] } } });
     expect(yesterday.length).toBeGreaterThan(0);
@@ -176,6 +180,36 @@ describe("core journey", () => {
     expect(r.questionCount).toBe(10);
     const qs = await prisma.mockQuestion.findMany({ where: { mockId: r.mockId }, include: { question: { include: { topic: { include: { subject: true } } } } } });
     expect(qs.every((x) => x.question.topic.subject.examId === examId)).toBe(true);
+  });
+});
+
+describe("paper timer", () => {
+  it("saves a timed paper once, counts its time as study and caps time at the wall clock", async () => {
+    const started = at(NOW, 3 * 24 * 60);
+    const ended = at(started, 70);
+    const input = { clientId: "paper-test-0001", title: "SSC CGL Mock paper", plannedMinutes: 60, activeSeconds: 99 * 60, pauseCount: 1, laps: [1500, 3000], totalQuestions: 100, attempted: 88, marksObtained: 132.5, totalMarks: 200, note: "", startedAt: started.toISOString(), endedAt: ended.toISOString() };
+    const r = await savePaper(userId, input, ended);
+    expect(r.paper.activeSeconds).toBeLessThanOrEqual(71 * 60); // 99 min claimed, only 70 min passed
+    expect(r.paper.percent).toBe(66.3);
+    expect(r.xp.length).toBe(1);
+    const again = await savePaper(userId, input, ended);
+    expect(again.xp.length).toBe(0);
+    expect(await prisma.paperLog.count({ where: { userId } })).toBe(1);
+    const stat = await prisma.dailyStat.findUniqueOrThrow({ where: { userId_date: { userId, date: dayKey(ended) } } });
+    expect(stat.actualMinutes).toBeGreaterThanOrEqual(70);
+    expect(stat.mocksTaken).toBe(1);
+    await expect(savePaper(userId, { ...input, clientId: "paper-test-0002", marksObtained: 250 }, ended)).rejects.toThrow(/more than the total/);
+    const list = await listPapers(userId);
+    expect(list.records.bestPercent).toBe(66.3);
+  });
+
+  it("only serves named, non-empty shayari lines", async () => {
+    const all = await allShayari();
+    expect(all.length).toBeGreaterThan(100);
+    expect(all.every((x) => x.t.trim() && x.p.trim())).toBe(true);
+    expect(new Set(all.map((x) => x.id)).size).toBe(all.length);
+    const r = await adminAddShayari("कोई पंक्ति || \nबिना कवि की पंक्ति", "hi");
+    expect(r.added).toBe(0); // a line without a poet is refused
   });
 });
 

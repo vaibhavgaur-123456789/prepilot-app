@@ -8,6 +8,7 @@ import { activeMs, breakMs, fmtClock, useTimer } from "@/lib/client/timer-store"
 import { Alert, Badge, Button, Card, cx, inputClass } from "./ui";
 import { CoffeeIcon, PauseIcon, PlayIcon } from "./icons";
 import { useT } from "@/i18n/client";
+import { ShayariCard } from "./Shayari";
 
 type TaskInfo = { id: string; title: string; type: string; topicId: string | null; plannedMinutes: number; questionTarget: number; objective: string; topicName: string | null } | null;
 type Result = { xp: { type: string; amount: number; reason: string }[]; flags: string[]; message: string; achievements: { name: string; icon: string }[]; weakFlagged: string[]; pathwayMessage?: string | null } | null;
@@ -283,6 +284,7 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
           {result.flags.length > 0 && <details className="text-xs text-muted"><summary>Adjustments made to this session</summary><ul className="list-inside list-disc">{result.flags.map((f) => <li key={f}>{f}</li>)}</ul></details>}
         </Card>
       )}
+      <ShayariCard />
       <div className="flex justify-center gap-2">
         <Link href="/" className="inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary">Home</Link>
         <Link href="/plan" className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-semibold">Plan</Link>

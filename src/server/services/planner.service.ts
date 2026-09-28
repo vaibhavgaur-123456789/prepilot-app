@@ -61,28 +61,12 @@ export async function triageUnfinished(ctx: StudentContext) {
 
 // ───────────────────────── Plan generation ─────────────────────────
 
-async function pickMock(userId: string, examId: string, capacity: number, examDuration: number) {
-  const wantFull = capacity >= examDuration + PLANNER.mockAnalysisMinutes;
-  const type = wantFull ? "FULL" : "SECTIONAL";
-  const mocks = await prisma.mock.findMany({
-    where: { examId, type, createdById: null, isPublished: true },
-    include: { attempts: { where: { userId }, orderBy: { startedAt: "desc" }, take: 1 } },
-    orderBy: { title: "asc" },
-  });
-  const fitting = mocks.filter((m) => m.durationMinutes <= capacity - 20);
-  const fresh = fitting.find((m) => m.attempts.length === 0);
-  const chosen = fresh ?? fitting.sort((a, b) => (a.attempts[0]?.startedAt.getTime() ?? 0) - (b.attempts[0]?.startedAt.getTime() ?? 0))[0];
-  return chosen ?? null;
-}
-
 export async function paceFor(ctx: StudentContext, now = new Date()) {
   const { user, profile, today } = ctx;
-  const [cov, recentDone, stats14, mocks28, lastMock] = await Promise.all([
+  const [cov, recentDone, stats14] = await Promise.all([
     syllabusCoverage(user.id, profile.examId),
     prisma.userTopicState.findMany({ where: { userId: user.id, status: "COMPLETED", completedAt: { gte: new Date(now.getTime() - 14 * 86_400_000) } }, include: { topic: { select: { weightage: true } } } }),
     prisma.dailyStat.aggregate({ where: { userId: user.id, date: { gte: addDays(today, -13), lte: today } }, _sum: { questions: true } }),
-    prisma.mockAttempt.count({ where: { userId: user.id, status: "SUBMITTED", submittedAt: { gte: new Date(now.getTime() - 28 * 86_400_000) }, mock: { examId: profile.examId, type: { in: ["FULL", "SECTIONAL"] } } } }),
-    prisma.mockAttempt.findFirst({ where: { userId: user.id, status: "SUBMITTED", mock: { examId: profile.examId, type: { in: ["FULL", "SECTIONAL"] } } }, orderBy: { submittedAt: "desc" } }),
   ]);
   return computePace({
     today,
@@ -91,9 +75,10 @@ export async function paceFor(ctx: StudentContext, now = new Date()) {
     doneUnits: cov.doneUnits,
     unitsLast14: recentDone.reduce((s, t) => s + t.topic.weightage, 0),
     questionsLast14: stats14._sum.questions ?? 0,
-    mocksLast28: mocks28,
-    lastMockDate: lastMock?.submittedAt ? dayKey(lastMock.submittedAt, user.timezone) : null,
-    includeMocks: !ctx.exam.ownerId && (await prisma.mock.count({ where: { examId: ctx.exam.id, createdById: null } })) > 0,
+    // In-app MCQ mocks were removed (students solve papers on paper with the Paper timer), so the planner no longer schedules mocks.
+    mocksLast28: 0,
+    lastMockDate: null,
+    includeMocks: false,
   });
 }
 
@@ -242,16 +227,6 @@ export async function ensureDayPlan(userId: string, opts: EnsurePlanOptions = {}
     }));
 
   const pace = await paceFor(ctx, now);
-  const hasMockToday = kept.length > 0 && (await prisma.task.count({ where: { userId, date, type: "MOCK" } })) > 0;
-  // No full mocks in the first week for a fresh start: the baseline diagnostic covers that, and the student needs study time first.
-  const settlingIn = diffDays(dayKey(ctx.profile.createdAt, ctx.tz), date) < 7 && !(await prisma.mockAttempt.count({ where: { userId, status: "SUBMITTED", mock: { type: { in: ["FULL", "SECTIONAL"] } } } }));
-  const mock = !hasMockToday && pace.mockDueToday && !recovery.active && !settlingIn ? await pickMock(userId, ctx.exam.id, capacity, ctx.exam.durationMinutes) : null;
-  const pendingAnalysis = await prisma.mockAttempt.findFirst({
-    where: { userId, status: "SUBMITTED", analyzedAt: null, mock: { type: { not: "DIAGNOSTIC" } } },
-    include: { mock: true },
-    orderBy: { submittedAt: "desc" },
-  });
-  const analysisPlanned = pendingAnalysis ? await prisma.task.count({ where: { userId, date, type: "MOCK_ANALYSIS" } }) : 0;
   const unresolvedMistakes = await prisma.mistake.count({ where: { userId, resolved: false } });
 
   const scores = candidates.map((c) => c.score).sort((a, b) => b - a);
@@ -265,8 +240,8 @@ export async function ensureDayPlan(userId: string, opts: EnsurePlanOptions = {}
     revisionsDue,
     carryOvers,
     unresolvedMistakes,
-    mock: mock ? { mockId: mock.id, title: mock.title, minutes: mock.durationMinutes, reason: `${pace.mocks.required} mock${pace.mocks.required === 1 ? "" : "s"}/week recommended with ${pace.daysLeft} days left` } : null,
-    pendingMockAnalysis: pendingAnalysis && !analysisPlanned ? { attemptId: pendingAnalysis.id, title: pendingAnalysis.mock.title } : null,
+    mock: null,
+    pendingMockAnalysis: null,
     mode: recovery.active ? "RECOVERY" : "NORMAL",
     finalPhase: pace.phase === "FINAL",
     minScore,

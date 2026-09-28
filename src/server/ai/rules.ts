@@ -154,7 +154,7 @@ export function ruleBasedAnswer(text: string, c: CoachContext, uiLang?: string |
     }
     case "LAST_MOCK": {
       const m = c.lastMock;
-      if (!m) lines.push(S("You haven't submitted a test yet. Take one from the Tests tab and I'll analyse it here.", "आपने अभी कोई टेस्ट नहीं दिया। टेस्ट टैब से एक दें, फिर मैं विश्लेषण करूँगा।"));
+      if (!m) lines.push(S("Solve your mock or previous year paper on paper and time it with the 📝 Paper timer. Write your marks at the end to see your score trend in Analytics.", "अपना मॉक या पिछले साल का पेपर कागज़ पर हल करें और 📝 पेपर टाइमर से समय नापें। आखिर में अंक लिखें, विश्लेषण में स्कोर का रुझान दिखेगा।"));
       else {
         lines.push(S(`${m.title}: ${m.percent}% score, ${pct(m.accuracy)} accuracy, ${pct(m.attemptRate)} attempted.`, `${m.title}: स्कोर ${m.percent}%, सटीकता ${pct(m.accuracy)}, ${pct(m.attemptRate)} प्रश्न हल किए।`));
         const subj = [...m.bySubject].filter((s) => s.accuracy !== null).sort((a, b) => (a.accuracy ?? 0) - (b.accuracy ?? 0));
@@ -202,7 +202,7 @@ export function ruleBasedAnswer(text: string, c: CoachContext, uiLang?: string |
       if (c.mistakes.top) lines.push(S(`Tip: ${MISTAKE_FIXES[c.mistakes.top.category]}`, "सुझाव: हर प्रश्न का आखिरी हिस्सा ध्यान से पढ़ें और हिसाब दोबारा जाँचें।"));
       const examples = H
         ? ["\"आज क्या पढ़ूँ?\"", "\"मेरे पास सिर्फ 2 घंटे हैं\"", "\"percentage कैसे सुधारूँ?\"", "\"पिछला टेस्ट कैसा रहा?\"", "\"रिवीज़न प्लान बनाओ\"", "\"मेरी स्ट्रीक कितनी है?\"", "\"पढ़ने का मन नहीं कर रहा\""]
-        : ["\"What should I study today?\"", "\"I have only 2 hours\"", "\"How do I improve Percentage?\"", "\"Analyze my last mock\"", "\"Create a revision plan\"", "\"What's my streak?\"", "\"I don't feel like studying\""];
+        : ["\"What should I study today?\"", "\"I have only 2 hours\"", "\"How do I improve Percentage?\"", "\"Create a revision plan\"", "\"What's my streak?\"", "\"I don't feel like studying\""];
       const shuffled = [...examples].sort(() => Math.random() - 0.5).slice(0, 3);
       lines.push(S(`Try asking: ${shuffled.join(", ")}`, `ऐसे पूछें: ${shuffled.join(", ")}`));
     }

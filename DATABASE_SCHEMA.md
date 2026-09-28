@@ -1,4 +1,4 @@
-# PrepPilot — Database Schema
+# RozPadh (formerly PrepPilot) — Database Schema
 
 Source of truth: [`prisma/schema.prisma`](prisma/schema.prisma). Migrations: `prisma/migrations/`. Seed: `prisma/seed.ts`.
 

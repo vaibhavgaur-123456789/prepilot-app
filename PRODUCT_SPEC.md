@@ -1,4 +1,4 @@
-# PrepPilot — Product Specification
+# RozPadh (formerly PrepPilot) — Product Specification
 
 > Working name. All branding lives in `src/config/brand.ts`, so a rename touches one file.
 

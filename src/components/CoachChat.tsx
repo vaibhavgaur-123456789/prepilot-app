@@ -7,7 +7,7 @@ import { useLang, useT } from "@/i18n/client";
 
 type Msg = { role: "user" | "assistant"; content: string; provider?: string | null };
 const SUGGESTIONS = {
-  en: ["What should I study today?", "I missed yesterday. What should I do?", "I have only 2 hours today.", "My Maths score is falling.", "Why am I getting questions wrong?", "Create a revision plan.", "Analyze my last mock.", "I don't feel like studying", "What's my streak?"],
+  en: ["What should I study today?", "I missed yesterday. What should I do?", "I have only 2 hours today.", "My Maths score is falling.", "Why am I getting questions wrong?", "Create a revision plan.", "I don't feel like studying", "What's my streak?"],
   hi: ["आज क्या पढ़ूँ?", "कल पढ़ाई छूट गई, अब क्या करूँ?", "आज सिर्फ 2 घंटे हैं", "मेरा Maths गिर रहा है", "मेरी गलतियाँ क्यों हो रही हैं?", "रिवीज़न प्लान बनाओ", "पिछला टेस्ट कैसा रहा?", "पढ़ने का मन नहीं कर रहा", "मेरी स्ट्रीक कितनी है?"],
 };
 
@@ -45,7 +45,7 @@ export function CoachChat({ conversationId: initialId, initial, mode }: { conver
 
   return (
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col">
-      <PageHeader title={t("coach.title")}subtitle="Answers use your actual plan, study history, mocks, weak topics and revision schedule." action={<Badge tone={mode === "llm" ? "primary" : "neutral"}>{mode === "llm" ? "Claude-powered" : "Built-in data coach"}</Badge>} />
+      <PageHeader title={t("coach.title")}subtitle="Answers use your actual plan, study history, weak topics and revision schedule." action={<Badge tone={mode === "llm" ? "primary" : "neutral"}>{mode === "llm" ? "Claude-powered" : "Built-in data coach"}</Badge>} />
       {mode === "rules" && <p className="-mt-2 mb-3 text-xs text-muted">{t("coach.rulesNote")}</p>}
       <div className="flex-1 space-y-3" aria-live="polite">
         {msgs.length === 0 && (

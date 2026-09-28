@@ -1,4 +1,4 @@
-# PrepPilot — Architecture
+# RozPadh (formerly PrepPilot) — Architecture
 
 ## 1. Stack and why
 

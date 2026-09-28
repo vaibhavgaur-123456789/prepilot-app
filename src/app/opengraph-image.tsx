@@ -20,7 +20,7 @@ export default function OgImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ fontSize: 64, fontWeight: 800, lineHeight: 1.1 }}>Plan. Study. Track. Improve.</div>
-          <div style={{ fontSize: 32, opacity: 0.92 }}>Daily plan · Focus timer · Attendance · Alarms · Revision · Mock tests</div>
+          <div style={{ fontSize: 32, opacity: 0.92 }}>Daily plan · Focus timer · Paper timer · Attendance · Alarms · Shayari</div>
         </div>
         <div style={{ display: "flex", gap: 16, fontSize: 28 }}>
           {["SSC", "Railway", "Banking", "Boards", "Your own syllabus"].map((x) => (

@@ -1,4 +1,4 @@
-# PrepPilot
+# RozPadh (formerly PrepPilot)
 
 An exam-preparation operating system for SSC, Railway, Banking and similar objective exams.
 It measures **PLAN vs ACTION vs RESULT** and adapts the next plan from the gap.

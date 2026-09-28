@@ -58,6 +58,44 @@ model User {
   feedback          Feedback[]
   pushSubscriptions PushSubscription[]
   alarms            StudyAlarm[]
+  paperLogs         PaperLog[]
+}
+
+/// A paper (mock/previous-year/sample paper) the student solved on paper while the app timed it.
+/// The questions are never in the app; only time and the self-entered score are stored.
+model PaperLog {
+  id               String   @id @default(cuid())
+  userId           String
+  title            String
+  plannedMinutes   Int
+  activeSeconds    Int
+  pauseCount       Int      @default(0)
+  laps             String   @default("[]") // JSON: seconds at which each section was finished
+  totalQuestions   Int?
+  attempted        Int?
+  marksObtained    Float?
+  totalMarks       Float?
+  note             String   @default("")
+  startedAt        DateTime
+  endedAt          DateTime
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, endedAt])
+}
+
+/// Extra famous lines (shayari/quotes by real, named poets) added by the admin, on top of the built-in list.
+model Shayari {
+  id        String   @id @default(cuid())
+  text      String
+  poet      String
+  source    String   @default("")
+  meaning   String   @default("")
+  lang      String   @default("hi") // hi | ur | sa | en | bn
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([active])
 }
 
 /// A daily study alarm the student sets ("7:00 pm padhai"). Delivered as a push notification.

@@ -1,5 +1,6 @@
 import { prisma } from "@/server/db";
-import { addDays, diffDays, localHour, rangeDays } from "@/lib/engine/dates";
+import { addDays, diffDays, localHour, rangeDays, weekdayIndex } from "@/lib/engine/dates";
+import { listPapers } from "./paper.service";
 import { computeInsights } from "@/lib/engine/insights";
 import { PATHWAY } from "@/lib/engine/weakness";
 import { getStudentContext } from "./context";
@@ -30,6 +31,15 @@ export async function getAnalytics(userId: string, days: 7 | 30 = 30, now = new 
     prisma.studySession.findMany({ where: { userId, status: "COMPLETED", validated: true, startedAt: { gte: new Date(now.getTime() - 60 * 86_400_000) } }, include: { task: { include: { topic: { include: { subject: true } } } } } }),
     benchmarkComparisons(userId, now),
   ]);
+
+  // Fitness-tracker style heatmap: the last 16 weeks, Monday first.
+  const heatFrom = addDays(ctx.today, -(7 * 15 + weekdayIndex(ctx.today)));
+  const [heatRows, papers] = await Promise.all([
+    prisma.dailyStat.findMany({ where: { userId, date: { gte: heatFrom, lte: ctx.today } }, select: { date: true, actualMinutes: true, leave: true } }),
+    listPapers(userId, 30),
+  ]);
+  const heatBy = new Map(heatRows.map((r) => [r.date, r]));
+  const heatmap = rangeDays(heatFrom, ctx.today).map((date) => ({ date, minutes: heatBy.get(date)?.actualMinutes ?? 0, leave: heatBy.get(date)?.leave ?? false }));
 
   const byDate = new Map(stats.map((s) => [s.date, s]));
   const series = rangeDays(from, ctx.today).map((date) => {
@@ -108,6 +118,8 @@ export async function getAnalytics(userId: string, days: 7 | 30 = 30, now = new 
     readiness,
     readinessHistory: rHistory,
     mocks,
+    papers,
+    heatmap,
     subjectPerformance,
     weakTopics,
     revision: { ...rev, dueNow: queue.filter((q) => q.due).length, upcoming: queue.filter((q) => !q.due).length, queue: queue.slice(0, 10) },

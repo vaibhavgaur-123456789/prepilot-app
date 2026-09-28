@@ -4,9 +4,12 @@ import { getAnalytics } from "@/server/services/analytics.service";
 import { formatMinutes } from "@/lib/engine/dates";
 import { Badge, Card, CardTitle, cx, EmptyState, PageHeader, Progress, Provenance, Stat } from "@/components/ui";
 import { PlannedActualChart, SubjectBars, TrendChart } from "@/components/charts";
+import { getT } from "@/i18n/server";
 
 export const metadata = { title: "Analytics" };
 
+/** Heatmap colour: more study minutes = stronger brand colour. */
+const heat = (m: number) => (m <= 0 ? "var(--surface-2)" : `color-mix(in srgb, var(--primary) ${m < 30 ? 30 : m < 60 ? 50 : m < 120 ? 75 : 100}%, var(--surface-2))`);
 const pct = (v: number | null | undefined) => (v === null || v === undefined ? "–" : `${Math.round(v * 100)}%`);
 const statusTone = { AHEAD: "success", ON_TRACK: "success", SLIGHTLY_BEHIND: "warning", BEHIND: "danger", NOT_ENOUGH_DATA: "neutral" } as const;
 const statusText = { AHEAD: "Ahead", ON_TRACK: "On track", SLIGHTLY_BEHIND: "Slightly behind", BEHIND: "Behind", NOT_ENOUGH_DATA: "Not enough data" } as const;
@@ -14,8 +17,9 @@ const statusText = { AHEAD: "Ahead", ON_TRACK: "On track", SLIGHTLY_BEHIND: "Sli
 export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
   const user = await requireStudent();
   const days = (await searchParams).days === "7" ? 7 : 30;
-  const a = await getAnalytics(user.id, days);
+  const [a, { t }] = await Promise.all([getAnalytics(user.id, days), getT()]);
   const short = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  const paperScores = [...a.papers.papers].reverse().filter((p) => p.percent !== null);
 
   return (
     <div className="space-y-4">
@@ -36,6 +40,21 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         <Stat label="Accuracy" value={pct(a.totals.accuracy)} />
         <Stat label="Syllabus" value={`${a.coverage.topicsCompleted}/${a.coverage.topicsTotal}`} sub="topics completed" />
       </div>
+
+      <Card>
+        <CardTitle eyebrow={<Provenance kind="measured" />}>{t("track.heatmap")}</CardTitle>
+        <p className="mb-3 text-xs text-muted">{t("track.heatmapSub")}</p>
+        <div className="overflow-x-auto pb-1">
+          <div className="grid w-max grid-flow-col grid-rows-7 gap-[3px]" role="img" aria-label={t("track.heatmap")}>
+            {a.heatmap.map((d) => (
+              <span key={d.date} title={`${short(d.date)}: ${d.leave ? "leave" : formatMinutes(d.minutes)}`} className="h-3.5 w-3.5 rounded-[3px] sm:h-4 sm:w-4" style={{ background: d.leave ? "var(--warm-soft)" : heat(d.minutes) }} />
+            ))}
+          </div>
+        </div>
+        <div className="mt-2 flex items-center gap-1 text-[11px] text-muted">
+          {t("track.less")} {[0, 20, 50, 100, 180].map((m) => <span key={m} className="h-3 w-3 rounded-[3px]" style={{ background: heat(m) }} />)} {t("track.more")}
+        </div>
+      </Card>
 
       <Card>
         <CardTitle>Planned vs actual</CardTitle>
@@ -69,8 +88,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       <Card>
         <CardTitle eyebrow={<span className="inline-flex items-center gap-2">Exam countdown <Provenance kind="projection" /></span>}>{a.pace.daysLeft} days remaining</CardTitle>
         <p className="mb-3 text-sm">{a.pace.summary}</p>
-        <div className="grid gap-2 sm:grid-cols-3">
-          {[a.pace.syllabus, a.pace.questions, a.pace.mocks].map((m) => (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {[a.pace.syllabus, a.pace.questions].map((m) => (
             <div key={m.label} className="rounded-xl bg-surface-2 p-3">
               <div className="flex items-center justify-between"><p className="text-sm font-semibold">{m.label}</p><Badge tone={statusTone[m.status]}>{statusText[m.status]}</Badge></div>
               <p className="tabular mt-1 text-sm">Current <b>{m.current}</b> · Required <b>{m.required}</b> <span className="text-xs text-muted">{m.unit}</span></p>
@@ -89,8 +108,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
         <Card>
           <CardTitle>Accuracy trend</CardTitle>
           {a.series.filter((s) => s.accuracy !== null).length < 2 ? <p className="text-sm text-muted">Solve a few questions on more days to see the trend.</p> : <TrendChart data={a.series.map((s) => ({ label: short(s.date), value: s.accuracy }))} unit="%" label="Daily accuracy" />}
-          <CardTitle>Mock trend</CardTitle>
-          {a.mocks.length < 2 ? <p className="text-sm text-muted">Take at least two tests.</p> : <TrendChart data={a.mocks.map((m) => ({ label: short(new Date(m.submittedAt).toISOString().slice(0, 10)), value: m.percent, name: m.title }))} unit="%" label="Test score" height={160} />}
+          <CardTitle action={<Link href="/tests" className="text-sm font-semibold text-primary">{t("paper.title")} →</Link>}>{t("paper.score")} <Provenance kind="self-reported" /></CardTitle>
+          {paperScores.length < 2 ? <p className="text-sm text-muted">{t("paper.emptyText")}</p> : <TrendChart data={paperScores.map((p) => ({ label: short(p.endedAt.slice(0, 10)), value: p.percent, name: p.title }))} unit="%" label={t("paper.score")} height={160} />}
         </Card>
       </div>
 
@@ -159,7 +178,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           <ul className="space-y-1.5 text-sm">
             <li>Longest study day: <b>{a.records.longestDay ? `${formatMinutes(a.records.longestDay.minutes)} (${a.records.longestDay.date})` : "–"}</b></li>
             <li>Most questions in a day: <b>{a.records.mostQuestions?.questions ?? "–"}</b></li>
-            <li>Best test: <b>{a.records.bestMock ? `${a.records.bestMock.percent}% (${a.records.bestMock.title})` : "–"}</b></li>
+            <li>Best paper score: <b>{a.papers.records.bestPercent === null ? "–" : `${a.papers.records.bestPercent}%`}</b></li>
+            <li>Papers timed: <b>{a.papers.records.count}</b></li>
             <li>Best streak: <b>{a.records.bestStreak} days</b></li>
           </ul>
         </Card>

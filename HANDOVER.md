@@ -1,4 +1,4 @@
-# PrepPilot: aage badlav kaise karein (chat khatam hone ke baad)
+# RozPadh (pehle PrepPilot): aage badlav kaise karein (chat khatam hone ke baad)
 
 Poora code GitHub repo `preppilot` mein hai, aur app Vercel pe live hai.
 **GitHub ke `main` branch pe jo bhi naya code aata hai, Vercel use ~2 minute mein apne-aap live kar deta hai.**

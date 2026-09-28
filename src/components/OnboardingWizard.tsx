@@ -168,19 +168,6 @@ export function OnboardingWizard({ exams: initialExams, defaultName, changing = 
     }
   }
 
-  async function startDiagnostic() {
-    setBusy(true);
-    try {
-      const { mocks: list } = await apiFetch<{ mocks: { id: string; type: string }[] }>("/api/v1/mocks");
-      const diag = list.find((m) => m.type === "DIAGNOSTIC");
-      if (!diag) return router.push("/");
-      const a = await apiFetch<{ id: string }>(`/api/v1/mocks/${diag.id}/start`, { method: "POST", body: {} });
-      router.push(`/tests/attempt/${a.id}`);
-    } catch {
-      router.push("/");
-    }
-  }
-
   if (result) {
     const b = result.baseline;
     const tone = b.feasibility === "COMFORTABLE" ? "success" : b.feasibility === "TIGHT" ? "warning" : "danger";
@@ -194,7 +181,7 @@ export function OnboardingWizard({ exams: initialExams, defaultName, changing = 
             <div><p className="text-xs text-muted">Study time remaining</p><p className="tabular text-xl font-semibold">~{b.remainingStudyHours}h</p></div>
             <div><p className="text-xs text-muted">Readiness (initial)</p><p className="tabular text-xl font-semibold">{result.readiness.score}<span className="text-sm text-muted">/100</span></p></div>
           </div>
-          <p className="mt-3 text-xs text-muted">Readiness starts with <b>low confidence</b>: it&apos;s an estimate from very little data. It becomes reliable as you study and take mocks. It is not a probability of selection.</p>
+          <p className="mt-3 text-xs text-muted">Readiness starts with <b>low confidence</b>: it&apos;s an estimate from very little data. It becomes more reliable as you keep studying. It is not a probability of selection.</p>
         </Card>
         <Card>
           <div className="mb-2 flex items-center gap-2"><h2 className="font-semibold">Recommended daily study</h2><Provenance kind="estimate" /></div>
@@ -213,16 +200,9 @@ export function OnboardingWizard({ exams: initialExams, defaultName, changing = 
             ))}
           </div>
           {b.revisionScheduled > 0 && <p className="mt-3 text-sm text-muted">{b.revisionScheduled} completed topic{b.revisionScheduled === 1 ? " has" : "s have"} been scheduled for spaced revision over the next week.</p>}
-          {b.selfReportedMockAvg !== null && <p className="mt-1 text-sm text-muted">Your past mock average ({b.selfReportedMockAvg}%) is recorded as self-reported. It doesn&apos;t count toward readiness until you take mocks here.</p>}
+          {b.selfReportedMockAvg !== null && <p className="mt-1 text-sm text-muted">Your past mock average ({b.selfReportedMockAvg}%) is recorded as self-reported. Time your next papers with the ⏱ Paper timer to track them.</p>}
         </Card>
-        <Card className="bg-primary-soft">
-          <h2 className="font-semibold">Recommended: 12-question baseline diagnostic (~12 min)</h2>
-          <p className="mt-1 text-sm text-muted">Measures where you actually stand in each section, so the planner can use real accuracy instead of guesses.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button onClick={startDiagnostic} disabled={busy}>Take the diagnostic</Button>
-            <Button variant="secondary" onClick={() => { router.push("/"); router.refresh(); }}>Skip, show today&apos;s plan</Button>
-          </div>
-        </Card>
+        <Button className="w-full" onClick={() => { router.push("/"); router.refresh(); }}>Show today&apos;s plan →</Button>
       </div>
     );
   }
