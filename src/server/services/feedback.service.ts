@@ -17,7 +17,7 @@ async function emailOwner(subject: string, html: string, replyTo?: string | null
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-      body: JSON.stringify({ from: process.env.RESEND_FROM || "PrepPilot <onboarding@resend.dev>", to: to.split(",").map((s) => s.trim()), subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
+      body: JSON.stringify({ from: process.env.RESEND_FROM || "RozPadh <onboarding@resend.dev>", to: to.split(",").map((s) => s.trim()), subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
     });
     return res.ok;
   } catch {
@@ -34,7 +34,7 @@ export async function submitFeedback(
     data: { userId: user?.id ?? null, category: input.category, message: input.message, page: input.page ?? null, contact: input.contact || user?.email || null, userAgent: userAgent?.slice(0, 300) ?? null },
   });
   const emailed = await emailOwner(
-    `[PrepPilot] ${input.category.replace("_", " ").toLowerCase()} from ${user?.name ?? "a visitor"}`,
+    `[RozPadh] ${input.category.replace("_", " ").toLowerCase()} from ${user?.name ?? "a visitor"}`,
     `<p><b>Category:</b> ${escapeHtml(input.category)}</p><p><b>From:</b> ${escapeHtml(user ? `${user.name} (${user.email})` : input.contact ?? "anonymous")}</p><p><b>Page:</b> ${escapeHtml(input.page ?? "-")}</p><p style="white-space:pre-wrap">${escapeHtml(input.message)}</p><p>Open Admin → Complaints to respond.</p>`,
     fb.contact,
   );

@@ -36,7 +36,7 @@ Honesty rules (never break these):
 - `src/app/api/v1/*`: REST routes wrapped in `api()` from `src/server/http.ts` (auth, zod, rate limit, origin check).
 - `src/app/(app)/*`: student screens. `src/app/admin/*`: admin (role ADMIN). `src/components/*`: UI.
 - `prisma/seed-data/*`: exam content (3 exams, 886 questions) and a demo-user simulation.
-- Branding (the name "PrepPilot"): `src/config/brand.ts`.
+- Branding: the public name is **RozPadh** (renamed from PrepPilot in Sep 2026; the code, repo, cookies and DB still say "preppilot", which is fine). Name and tagline: `src/config/brand.ts`; logo: `src/components/Logo.tsx`, `public/icon.svg`, `src/app/icons/[size]/route.tsx`.
 
 ## Commands (Windows; Node is a portable install)
 If `node`/`npm`/`git` aren't found, prepend to PATH:

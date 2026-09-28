@@ -8,7 +8,7 @@ export const metadata = { title: "Help" };
 type Section = { icon: string; title: string; steps: string[]; href?: string };
 
 const EN: Section[] = [
-  { icon: "🚀", title: "Getting started", steps: ["Choose what you're studying for: a competitive exam, school/college, self development or a skill.", "Pick your exam from the list, or tap “➕ My exam/goal isn't listed” and type your own subjects, book and chapters.", "Set your daily study time and preferred hours. PrepPilot builds a plan every morning."] },
+  { icon: "🚀", title: "Getting started", steps: ["Choose what you're studying for: a competitive exam, school/college, self development or a skill.", "Pick your exam from the list, or tap “➕ My exam/goal isn't listed” and type your own subjects, book and chapters.", "Set your daily study time and preferred hours. RozPadh builds a plan every morning."] },
   { icon: "⏱", title: "Timer (punch in / punch out)", steps: ["Sit down to study → tap ⏱ Timer on Home. The stopwatch starts.", "Done → End session → tell us what you actually finished.", "Your time is saved and you earn points (XP). Sessions under 5 minutes earn no points."], href: "/study/session/free?quick=1" },
   { icon: "🗓", title: "Today's plan", steps: ["Plan shows today's blocks with times and why each was chosen.", "Drag to reorder, tap Edit to change, Skip if not today.", "Unfinished work is moved to another day, never deleted."], href: "/plan" },
   { icon: "📚", title: "My syllabus", steps: ["See every chapter and tap the circle: ○ not started → ◐ studying → ✓ done.", "Marking ✓ starts spaced revision (1, 3, 7, 14, 30 days).", "On your own syllabus you can add, rename or delete subjects, books and chapters anytime (new book, cut syllabus, no problem)."], href: "/syllabus" },
@@ -21,7 +21,7 @@ const EN: Section[] = [
 ];
 
 const HI: Section[] = [
-  { icon: "🚀", title: "शुरुआत", steps: ["चुनें आप किसलिए पढ़ रहे हैं: प्रतियोगी परीक्षा, स्कूल/कॉलेज, सेल्फ डेवलपमेंट या कोई स्किल।", "लिस्ट से अपना एग्ज़ाम चुनें, या “➕ मेरा एग्ज़ाम/लक्ष्य लिस्ट में नहीं है” दबाकर अपने विषय, किताब और चैप्टर खुद लिखें।", "रोज़ का पढ़ाई का समय और पसंदीदा घंटे चुनें। PrepPilot हर सुबह प्लान बनाता है।"] },
+  { icon: "🚀", title: "शुरुआत", steps: ["चुनें आप किसलिए पढ़ रहे हैं: प्रतियोगी परीक्षा, स्कूल/कॉलेज, सेल्फ डेवलपमेंट या कोई स्किल।", "लिस्ट से अपना एग्ज़ाम चुनें, या “➕ मेरा एग्ज़ाम/लक्ष्य लिस्ट में नहीं है” दबाकर अपने विषय, किताब और चैप्टर खुद लिखें।", "रोज़ का पढ़ाई का समय और पसंदीदा घंटे चुनें। RozPadh हर सुबह प्लान बनाता है।"] },
   { icon: "⏱", title: "टाइमर (पंच इन / पंच आउट)", steps: ["पढ़ने बैठें → होम पर ⏱ टाइमर दबाएँ, स्टॉपवॉच चालू हो जाएगी।", "पढ़ाई खत्म → सेशन खत्म करें → बताएँ असल में क्या पूरा किया।", "आपका समय सेव होता है और अंक (XP) मिलते हैं। 5 मिनट से छोटे सेशन पर अंक नहीं मिलते।"], href: "/study/session/free?quick=1" },
   { icon: "🗓", title: "आज का प्लान", steps: ["प्लान में आज के काम, समय और हर काम का कारण दिखता है।", "खींचकर क्रम बदलें, बदलें से समय बदलें, आज नहीं करना तो छोड़ें।", "अधूरा काम दूसरे दिन चला जाता है, कभी मिटता नहीं।"], href: "/plan" },
   { icon: "📚", title: "मेरा सिलेबस", steps: ["हर चैप्टर के गोले पर टैप करें: ○ शुरू नहीं → ◐ पढ़ रहे हैं → ✓ पूरा।", "✓ करते ही रिवीज़न शुरू (1, 3, 7, 14, 30 दिन बाद)।", "अपने सिलेबस में कभी भी विषय, किताब और चैप्टर जोड़ें, बदलें या हटाएँ। किताब बदली या सिलेबस कटा, कोई दिक्कत नहीं।"], href: "/syllabus" },
@@ -38,7 +38,7 @@ export default async function HelpPage() {
   const sections = lang === "hi" ? HI : EN;
   return (
     <div className="space-y-4">
-      <PageHeader title={lang === "hi" ? "मदद: ऐप कैसे इस्तेमाल करें" : "Help: how to use PrepPilot"} subtitle={lang === "hi" ? "ऊपर EN | हिं से भाषा बदलें" : "Switch language with EN | हिं at the top"} />
+      <PageHeader title={lang === "hi" ? "मदद: ऐप कैसे इस्तेमाल करें" : "Help: how to use RozPadh"} subtitle={lang === "hi" ? "ऊपर EN | हिं से भाषा बदलें" : "Switch language with EN | हिं at the top"} />
       <Card>
         <p className="mb-2 font-semibold">📲 {lang === "hi" ? "फ़ोन पर ऐप की तरह इंस्टॉल करें" : "Install on your phone like an app"}</p>
         <InstallButton />

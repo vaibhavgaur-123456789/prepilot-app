@@ -32,7 +32,7 @@ function Row({ f }: { f: Item }) {
         {f.page && <span>· page {f.page}</span>}
       </div>
       <p className="mt-2 whitespace-pre-wrap text-sm">{f.message}</p>
-      {f.contact && <a className="mt-1 inline-block text-xs font-semibold text-primary" href={`mailto:${f.contact}?subject=${encodeURIComponent("Re: your PrepPilot report")}`}>Reply by email →</a>}
+      {f.contact && <a className="mt-1 inline-block text-xs font-semibold text-primary" href={`mailto:${f.contact}?subject=${encodeURIComponent("Re: your RozPadh report")}`}>Reply by email →</a>}
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <input className={cx(inputClass, "min-h-9 flex-1")} placeholder="Note to the student (shown when resolved)" value={note} onChange={(e) => setNote(e.target.value)} />
         {f.status !== "IN_PROGRESS" && <Button variant="secondary" onClick={() => set("IN_PROGRESS")}>In progress</Button>}

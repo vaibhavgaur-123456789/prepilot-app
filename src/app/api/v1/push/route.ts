@@ -21,7 +21,7 @@ export const POST = api(
       await removeSubscription(user.id, input.endpoint);
       return { ok: true };
     }
-    const sent = await sendPush(user.id, { title: "PrepPilot notifications are on ✅", body: "You'll get your daily briefing, study and revision reminders here.", href: "/" });
+    const sent = await sendPush(user.id, { title: "RozPadh notifications are on ✅", body: "You'll get your daily briefing, study and revision reminders here.", href: "/" });
     return { sent };
   },
   { rate: { limit: 20, windowSec: 60 } },

@@ -23,7 +23,7 @@ self.addEventListener("activate", (e) => {
 
 // Push notifications (Web Push).
 self.addEventListener("push", (e) => {
-  let data = { title: "PrepPilot", body: "", href: "/" };
+  let data = { title: "RozPadh", body: "", href: "/" };
   try {
     data = { ...data, ...e.data.json() };
   } catch {

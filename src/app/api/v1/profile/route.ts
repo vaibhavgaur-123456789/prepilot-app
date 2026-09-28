@@ -17,7 +17,7 @@ export const PATCH = api(async ({ req, user }) => {
 export const GET = api(async ({ user }) => {
   const data = await exportData(user.id);
   return new NextResponse(JSON.stringify(data, null, 2), {
-    headers: { "content-type": "application/json", "content-disposition": `attachment; filename="preppilot-export-${new Date().toISOString().slice(0, 10)}.json"` },
+    headers: { "content-type": "application/json", "content-disposition": `attachment; filename="rozpadh-export-${new Date().toISOString().slice(0, 10)}.json"` },
   });
 }, { rate: { limit: 5, windowSec: 3600, key: "export" } });
 

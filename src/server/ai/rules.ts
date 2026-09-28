@@ -210,7 +210,7 @@ export function ruleBasedAnswer(text: string, c: CoachContext, uiLang?: string |
   return { intent, answer: lines.join("\n") };
 }
 
-export const COACH_SYSTEM = `You are PrepPilot's study coach for a student in India.
+export const COACH_SYSTEM = `You are RozPadh's study coach for a student in India.
 Reply in the same language and script the student uses: Hindi in Devanagari if they write Hindi, Hinglish if they write Hinglish, otherwise English.
 Answer any study-related question. Use the student's measured data in the JSON context when it is relevant, citing specific numbers, topics and dates.
 Prefer concrete next actions (what to study, for how long, in what order) over generic motivation.

@@ -18,7 +18,7 @@ const COPY = {
     badge: "Free · Hindi & English · Works as an app",
     h1a: "Your study plan, timer and attendance",
     h1b: "all in one app",
-    sub: "PrepPilot tells you what to study today, times your study, keeps your attendance and reminds you on time. For SSC, Railway, Banking, state exams, school boards or your own syllabus.",
+    sub: "RozPadh tells you what to study today, times your study, keeps your attendance and reminds you on time. For SSC, Railway, Banking, state exams, school boards or your own syllabus.",
     start: "Start free", login: "I have an account", open: "Open my dashboard",
     featuresTitle: "Everything a serious student needs",
     features: [
@@ -38,7 +38,7 @@ const COPY = {
     examsMore: "Preparing for something else (UP Police, CUET, NEET, Class 10/12, a skill)? Create your own syllabus with your book and chapters.",
     faqTitle: "Questions",
     faq: [
-      ["Is PrepPilot free?", "Yes. The planner, timer, attendance, alarms, revision and mock tests are free."],
+      ["Is RozPadh free?", "Yes. The planner, timer, attendance, alarms, revision and mock tests are free."],
       ["How do I download the app?", "Open the site in Chrome (Android) or Safari (iPhone) and tap “Install app” or “Add to Home Screen”. It installs like a normal app, with its own icon and notifications."],
       ["Does it work in Hindi?", "Yes. Switch between English and हिंदी with the EN | हिं button at any time."],
       ["My exam isn't in the list. Can I still use it?", "Yes. Choose “My exam/goal isn't listed” and type your own subjects, book and chapters."],
@@ -51,7 +51,7 @@ const COPY = {
     badge: "मुफ़्त · हिंदी और English · ऐप की तरह चलता है",
     h1a: "पढ़ाई का प्लान, टाइमर और हाज़िरी",
     h1b: "सब एक ही ऐप में",
-    sub: "PrepPilot बताता है आज क्या पढ़ना है, पढ़ाई का समय नापता है, हाज़िरी रखता है और समय पर याद दिलाता है। SSC, Railway, Banking, राज्य परीक्षा, स्कूल बोर्ड या आपका अपना सिलेबस।",
+    sub: "RozPadh बताता है आज क्या पढ़ना है, पढ़ाई का समय नापता है, हाज़िरी रखता है और समय पर याद दिलाता है। SSC, Railway, Banking, राज्य परीक्षा, स्कूल बोर्ड या आपका अपना सिलेबस।",
     start: "मुफ़्त शुरू करें", login: "मेरा खाता है", open: "मेरा डैशबोर्ड खोलें",
     featuresTitle: "एक गंभीर छात्र को जो चाहिए, सब कुछ",
     features: [
@@ -71,7 +71,7 @@ const COPY = {
     examsMore: "किसी और चीज़ की तैयारी (UP Police, CUET, NEET, 10वीं/12वीं, कोई स्किल)? अपनी किताब और चैप्टर से अपना सिलेबस बनाएँ।",
     faqTitle: "सवाल-जवाब",
     faq: [
-      ["क्या PrepPilot मुफ़्त है?", "हाँ। प्लानर, टाइमर, हाज़िरी, अलार्म, रिवीज़न और मॉक टेस्ट मुफ़्त हैं।"],
+      ["क्या RozPadh मुफ़्त है?", "हाँ। प्लानर, टाइमर, हाज़िरी, अलार्म, रिवीज़न और मॉक टेस्ट मुफ़्त हैं।"],
       ["ऐप कैसे डाउनलोड करें?", "Android पर Chrome या iPhone पर Safari में साइट खोलें और “Install app” या “Add to Home Screen” दबाएँ। यह आम ऐप की तरह, अपने आइकन और सूचनाओं के साथ इंस्टॉल होता है।"],
       ["क्या यह हिंदी में चलता है?", "हाँ। EN | हिं बटन से कभी भी भाषा बदलें।"],
       ["मेरा एग्ज़ाम लिस्ट में नहीं है, क्या फिर भी इस्तेमाल कर सकता हूँ?", "हाँ। “मेरा एग्ज़ाम/लक्ष्य लिस्ट में नहीं है” चुनें और अपने विषय, किताब और चैप्टर लिखें।"],
