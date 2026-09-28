@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/server/auth/guards";
 import { LanguageSwitch } from "@/i18n/client";
 import { InstallButton } from "@/components/InstallButton";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { LogoMark } from "@/components/Logo";
 
 export const metadata: Metadata = {
   title: { absolute: `${BRAND.name}: Free study planner, focus timer & attendance for SSC, Railway, Banking and boards` },
@@ -110,7 +111,7 @@ export default async function WelcomePage() {
       <header className="glass sticky top-0 z-30 border-b border-border">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <Link href="/welcome" className="flex items-center gap-2 font-bold">
-            <span className="bg-grad grid h-8 w-8 place-items-center rounded-lg shadow-brand">P</span>
+            <LogoMark size={34} />
             {BRAND.name}
           </Link>
           <div className="flex items-center gap-2">

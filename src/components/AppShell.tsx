@@ -9,6 +9,7 @@ import { LanguageSwitch, useT } from "@/i18n/client";
 import type { Key } from "@/i18n/dict";
 import { BellIcon, ChartIcon, ChatIcon, HomeIcon, PlanIcon, StudyIcon, TestIcon, UserIcon } from "./icons";
 import { FeedbackButton } from "./FeedbackButton";
+import { LogoMark } from "./Logo";
 import { cx } from "./ui";
 
 const NAV: { href: string; label: Key; Icon: typeof HomeIcon }[] = [
@@ -54,7 +55,7 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border bg-surface p-4 md:flex">
         <Link href="/" className="mb-6 flex items-center gap-2 px-2 text-lg font-bold">
-          <span className="bg-grad grid h-8 w-8 place-items-center rounded-lg shadow-brand">P</span>
+          <LogoMark size={34} />
           {BRAND.name}
         </Link>
         <nav aria-label="Main" className="flex flex-col gap-1">
@@ -86,7 +87,7 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] px-4 py-2.5 backdrop-blur md:px-8">
           <Link href="/" className="flex items-center gap-2 font-bold md:invisible" aria-label={BRAND.name}>
-            <span className="bg-grad grid h-7 w-7 place-items-center rounded-lg text-sm">P</span>
+            <LogoMark size={30} />
             <span className="hidden min-[420px]:inline">{BRAND.name}</span>
           </Link>
           <div className="flex items-center gap-0.5">

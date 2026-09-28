@@ -2,6 +2,7 @@ import { BRAND } from "@/config/brand";
 import { LanguageSwitch } from "@/i18n/client";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { InstallButton } from "@/components/InstallButton";
+import { LogoMark } from "@/components/Logo";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,7 +10,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="w-full max-w-sm">
         <div className="mb-3 flex justify-end"><LanguageSwitch signedIn={false} /></div>
         <div className="mb-6 text-center">
-          <div className="animate-pop bg-grad shadow-brand mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl text-2xl font-bold">P</div>
+          <div className="animate-pop mx-auto mb-3 w-fit"><LogoMark size={64} title={BRAND.name} /></div>
           <h1 className="text-grad text-3xl font-extrabold">{BRAND.name}</h1>
           <p className="mt-1 text-sm text-muted">{BRAND.tagline}</p>
         </div>
