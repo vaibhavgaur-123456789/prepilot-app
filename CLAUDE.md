@@ -16,6 +16,8 @@ Read this first. The owner is not a programmer and usually writes in Hinglish (H
 RozPadh is a study-tracking app for Indian students (SSC, Railway, Banking, boards, own syllabus), like a fitness tracker but for study. It is mobile-first and installable as a PWA.
 - There are NO in-app MCQ tests any more (owner's decision, Sep 2026). The Tests tab (`/tests`) is a **Paper timer**: students solve printed/PDF papers and the app only times them (`PaperLog` table, `paper.service.ts`, `PaperTimer.tsx`). The old Mock/Question tables and `mock.service.ts` remain in the code but the planner no longer schedules mocks.
 - **Shayari**: `src/content/shayari.ts` holds real lines by named public-domain poets only (never AI-written; the owner insists). Admin can add more at `/admin/shayari` (`Shayari` table). A random line shows after every study session and paper (`ShayariCard`).
+- **Teacher dashboard** (`/teacher`, needs sign-in only, no onboarding): a teacher creates a class and gets a 6-letter code; students join from Profile or `/join/<code>`. Teachers see only study minutes, days studied, streak and paper count (`Classroom`/`ClassMember` tables, `classroom.service.ts`, `components/Teacher.tsx`). Possible paid B2B feature later.
+- **Play Store (TWA via PWABuilder)**: `/.well-known/assetlinks.json` is served from `src/config/android.ts`; fill in the package name and SHA-256 fingerprints once the owner generates the package. Privacy policy is at `/privacy`.
 Core idea: measure **PLAN vs ACTUAL vs RESULT** and adapt the next day's plan from the gap.
 Product rules: `PRODUCT_SPEC.md`. Design: `ARCHITECTURE.md`. Data: `DATABASE_SCHEMA.md`. Going live: `DEPLOY.md`.
 

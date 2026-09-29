@@ -239,7 +239,7 @@ export default async function WelcomePage() {
       </section>
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted">
-        <p>© {new Date().getFullYear()} {BRAND.name} · {c.footer}</p>
+        <p>© {new Date().getFullYear()} {BRAND.name} · {c.footer} · <Link href="/privacy" className="underline">Privacy</Link> · <Link href="/teacher" className="underline">Teachers</Link></p>
         <div className="mt-2"><FeedbackButton signedIn={!!user} variant="link" /></div>
       </footer>
     </main>

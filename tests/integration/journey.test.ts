@@ -12,6 +12,7 @@ import { xpSummary } from "@/server/services/gamification.service";
 import { createSession, resolveSession, destroySession } from "@/server/auth/session";
 import { listPapers, savePaper } from "@/server/services/paper.service";
 import { adminAddShayari, allShayari } from "@/server/services/shayari.service";
+import { classDashboard, createClass, joinClass, leaveClass } from "@/server/services/classroom.service";
 import { addDays, dayKey } from "@/lib/engine/dates";
 
 // A fixed "now": 08:00 IST on a Monday.
@@ -201,6 +202,24 @@ describe("paper timer", () => {
     await expect(savePaper(userId, { ...input, clientId: "paper-test-0002", marksObtained: 250 }, ended)).rejects.toThrow(/more than the total/);
     const list = await listPapers(userId);
     expect(list.records.bestPercent).toBe(66.3);
+  });
+
+  it("lets a teacher see a joined student's study time, and only their own classes", async () => {
+    const teacher = await signup({ name: "Meena Ma'am", email: "meena@test.dev", password: "meena-pass-123" });
+    const other = await signup({ name: "Other", email: "other@test.dev", password: "other-pass-123" });
+    const c = await createClass(teacher.id, "SSC Morning Batch");
+    expect(c.code).toMatch(/^[A-Z2-9]{6}$/);
+    const j = await joinClass(userId, c.code.toLowerCase());
+    expect(j.already).toBe(false);
+    expect((await joinClass(userId, c.code)).already).toBe(true);
+    const d = await classDashboard(teacher.id, c.id, at(NOW, 3 * 24 * 60 + 80));
+    expect(d.students).toHaveLength(1);
+    expect(d.students[0].weekMinutes).toBeGreaterThanOrEqual(70); // the paper timed above
+    expect(d.students[0].papersThisWeek).toBe(1);
+    await expect(classDashboard(other.id, c.id)).rejects.toThrow();
+    await expect(joinClass(userId, "ZZZZZZ")).rejects.toThrow(/No class/);
+    await leaveClass(userId, c.id);
+    expect((await classDashboard(teacher.id, c.id)).students).toHaveLength(0);
   });
 
   it("only serves named, non-empty shayari lines", async () => {

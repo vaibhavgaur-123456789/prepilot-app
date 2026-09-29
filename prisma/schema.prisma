@@ -59,6 +59,34 @@ model User {
   pushSubscriptions PushSubscription[]
   alarms            StudyAlarm[]
   paperLogs         PaperLog[]
+  classesTaught     Classroom[]       @relation("ClassTeacher")
+  classMemberships  ClassMember[]
+}
+
+/// A teacher's class/batch. Students join with the code and then share their study time with the teacher.
+model Classroom {
+  id        String        @id @default(cuid())
+  teacherId String
+  name      String
+  code      String        @unique // join code, e.g. "K7M2QX"
+  createdAt DateTime      @default(now())
+  teacher   User          @relation("ClassTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  members   ClassMember[]
+
+  @@index([teacherId])
+}
+
+/// A student in a class. Only study time, attendance, streak and paper count are shared, never notes or scores.
+model ClassMember {
+  id          String    @id @default(cuid())
+  classroomId String
+  userId      String
+  joinedAt    DateTime  @default(now())
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([classroomId, userId])
+  @@index([userId])
 }
 
 /// A paper (mock/previous-year/sample paper) the student solved on paper while the app timed it.

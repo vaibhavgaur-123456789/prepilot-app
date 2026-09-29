@@ -8,6 +8,8 @@ import { getStudentContext } from "@/server/services/context";
 import { parseJson } from "@/lib/json";
 import { Badge, Card, CardTitle, PageHeader, Progress, Stat } from "@/components/ui";
 import { SettingsForm } from "@/components/SettingsForm";
+import { JoinClass } from "@/components/Teacher";
+import { myClasses } from "@/server/services/classroom.service";
 
 export const metadata = { title: "Profile" };
 
@@ -16,12 +18,13 @@ const levelName: Record<string, string> = { EXAM: "Exam goal", MONTHLY: "This mo
 export default async function ProfilePage() {
   const user = await requireStudent();
   const ctx = await getStudentContext(user.id);
-  const [goals, xp, prefs, catalog, mine] = await Promise.all([
+  const [goals, xp, prefs, catalog, mine, classes] = await Promise.all([
     listGoals(user.id),
     xpSummary(user.id, ctx.today),
     getPrefs(user.id),
     prisma.achievement.findMany({ orderBy: { xpReward: "asc" } }),
     prisma.userAchievement.findMany({ where: { userId: user.id } }),
+    myClasses(user.id),
   ]);
   const unlocked = new Map(mine.map((m) => [m.achievementId, m.unlockedAt]));
 
@@ -70,6 +73,8 @@ export default async function ProfilePage() {
         </ul>
       </Card>
 
+      <JoinClass classes={classes} />
+
       <SettingsForm
         profile={{
           name: user.name, timezone: user.timezone, theme: user.theme, examDate: ctx.profile.examDate, dailyMinutes: ctx.profile.dailyMinutes,
@@ -90,7 +95,8 @@ export default async function ProfilePage() {
           <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/review/night">Night review</Link>
           <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/study/mistakes">Mistake book</Link>
           <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/coach">AI coach</Link>
-          {user.role === "ADMIN" && <Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/admin">Admin</Link>}
+          <Link className="rounded-xl bg-accent-soft px-3 py-2 font-semibold text-accent" href="/teacher">👩‍🏫 Teacher dashboard</Link>
+          {user.role === "ADMIN" &&<Link className="rounded-xl bg-surface-2 px-3 py-2 font-medium" href="/admin">Admin</Link>}
         </div>
       </Card>
     </div>
