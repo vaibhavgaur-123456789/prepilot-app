@@ -1,15 +1,15 @@
-@AGENTS.md
+﻿@AGENTS.md
 
 # RozPadh (formerly PrepPilot): guide for any AI/developer session
 
 Read this first. The owner is not a programmer and usually writes in Hinglish (Hindi + English). Reply in simple Hinglish, explain what you changed in plain words, and never assume they can debug code themselves.
 
 ## Where it runs
-- Live: https://prepilot-app.vercel.app (Vercel project `prepilot-app`, auto-deploys from `main`)
+- Live: https://rozpadh.vercel.app (Vercel project `rozpadh-app`, auto-deploys from `main`). The old prepilot-app.vercel.app address was removed in Sep 2026.
 - Code: https://github.com/vaibhavgaur-123456789/prepilot-app
 - Database: Supabase Postgres (Mumbai). Production env vars are in Vercel, with a local copy in the gitignored `.env.vercel`.
 - Owner/admin email: set in the `ADMIN_EMAILS` env var.
-- Scheduler: Supabase `pg_cron` + `pg_net` jobs `preppilot-alarms` (every 5 min → `/api/v1/cron/alarms`) and `preppilot-notifications` (hourly). Both send `Authorization: Bearer $CRON_SECRET`. If CRON_SECRET or the domain changes, re-create both jobs (`select cron.schedule(...)` replaces a job by name). View them in Supabase → Database → Cron Jobs.
+- Scheduler: Supabase `pg_cron` + `pg_net` jobs `preppilot-alarms` (every 5 min â†’ `/api/v1/cron/alarms`) and `preppilot-notifications` (hourly). Both send `Authorization: Bearer $CRON_SECRET`. If CRON_SECRET or the domain changes, re-create both jobs (`select cron.schedule(...)` replaces a job by name). View them in Supabase â†’ Database â†’ Cron Jobs.
 - Server region: `bom1` (Mumbai, set in vercel.json), next to the Supabase database.
 
 ## What this is
@@ -46,17 +46,18 @@ Honesty rules (never break these):
 If `node`/`npm`/`git` aren't found, prepend to PATH:
 `C:\Users\hp\AppData\Local\Programs\node-v24.21.0-win-x64` and `C:\Users\hp\AppData\Local\Programs\MinGit\cmd`.
 - `npm run dev`: local app on http://localhost:3000 (demo login: demo@preppilot.app / demo-pass-2026, admin: admin@preppilot.app / admin-pass-2026)
-- `npm run typecheck` · `npm run lint` · `npm test` (the full suite takes ~2 min, so run it in the background) · `npx next build`
+- `npm run typecheck` Â· `npm run lint` Â· `npm test` (the full suite takes ~2 min, so run it in the background) Â· `npx next build`
 - `npx prisma migrate dev --name <change>` after editing `prisma/schema.prisma` (local). Production picks up schema changes automatically on the next deploy (`prisma db push`).
 - If `prisma generate` fails with EPERM on Windows, stop the dev server first.
 
 ## Workflow rules
 - Before finishing any change: typecheck + lint + relevant tests must pass. Verify UI changes in a browser.
 - Commit with a clear message. **Pushing to `main` on GitHub deploys to production automatically (Vercel)**, so push only working code, and tell the owner when you push.
-- Never commit `.env*` files (except `.env.example`) or `*.db`. Secrets live in Vercel → Settings → Environment Variables.
+- Never commit `.env*` files (except `.env.example`) or `*.db`. Secrets live in Vercel â†’ Settings â†’ Environment Variables.
 - This project must stay separate from the owner's other website repository ("website-builder-site"). Never push PrepPilot there.
 
 ## Known gaps / ideas for later
 - Onboarding screens and engine-generated explanations are still English-only.
-- More exams: add them via Admin → "Add a new exam" (no code needed), or seed them in `prisma/seed-data/exams.ts`.
+- More exams: add them via Admin â†’ "Add a new exam" (no code needed), or seed them in `prisma/seed-data/exams.ts`.
 - Payments are not integrated (the `Subscription` table and `src/server/entitlements.ts` exist).
+

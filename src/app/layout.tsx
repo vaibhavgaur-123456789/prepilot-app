@@ -6,7 +6,7 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 import { I18nProvider } from "@/i18n/client";
 import { getLang } from "@/i18n/server";
 
-const SITE_URL = process.env.APP_URL || "https://prepilot-app.vercel.app";
+const SITE_URL = BRAND.siteUrl;
 const SEO_TITLE = `${BRAND.name}: Free study planner, timer & attendance for SSC, Railway, Banking and board exams`;
 const SEO_DESC =
   "Free exam preparation app in Hindi and English. Daily study plan, focus timer, attendance calendar, study alarms, spaced revision, a paper timer for mock and previous year papers, motivational shayari and progress tracking for SSC, Railway, Banking, state exams, school boards or your own syllabus.";

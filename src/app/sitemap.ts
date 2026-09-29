@@ -1,6 +1,7 @@
+import { BRAND } from "@/config/brand";
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.APP_URL || "https://prepilot-app.vercel.app";
+const SITE_URL = BRAND.siteUrl;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
