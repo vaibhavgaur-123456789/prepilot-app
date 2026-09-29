@@ -205,7 +205,7 @@ describe("paper timer", () => {
 
   it("only serves named, non-empty shayari lines", async () => {
     const all = await allShayari();
-    expect(all.length).toBeGreaterThan(100);
+    expect(all.length).toBeGreaterThan(250);
     expect(all.every((x) => x.t.trim() && x.p.trim())).toBe(true);
     expect(new Set(all.map((x) => x.id)).size).toBe(all.length);
     const r = await adminAddShayari("कोई पंक्ति || \nबिना कवि की पंक्ति", "hi");
