@@ -335,6 +335,26 @@ export const LANG_LABEL: Record<ShayariLang, { en: string; hi: string }> = {
   bn: { en: "Bengali", hi: "बांग्ला" },
 };
 
+/**
+ * "How do you feel?" moods. A line belongs to a mood when its student-friendly meaning (or the line itself)
+ * contains one of the mood's words. The lines are never changed; this only picks which ones to show first.
+ */
+export type Mood = "low" | "bored" | "fear" | "energy" | "failure" | "time";
+export const MOODS: { key: Mood; emoji: string; en: string; hi: string; words: string[] }[] = [
+  { key: "low", emoji: "😔", en: "Feeling low", hi: "मन नहीं लग रहा", words: ["निराश", "उम्मीद", "हौसला", "भरोसा", "विश्वास", "ताकत", "अंदर", "पहचान", "हिम्मत", "हार मत", "hope"] },
+  { key: "bored", emoji: "😴", en: "Bored / lazy", hi: "बोर / आलस", words: ["आलस", "टाल", "सोकर", "सोते", "आराम", "ऊब", "लगातार", "रोज़", "बूँद", "अभ्यास", "थोड़ा-थोड़ा"] },
+  { key: "fear", emoji: "😰", en: "Exam fear", hi: "परीक्षा का डर", words: ["डर", "घबरा", "चिंता", "शांत", "सहना", "सुख-दुख", "शक ", "परेशान", "नतीजे"] },
+  { key: "energy", emoji: "💪", en: "Need energy", hi: "जोश चाहिए", words: ["उठो", "आगे", "जोश", "इरादा", "मंज़िल", "ऊँचाई", "बाज़", "आसमान", "बढ़ो", "जुट"] },
+  { key: "failure", emoji: "🌧️", en: "Did badly", hi: "कम नंबर / हार", words: [" हार", "हार-", "गलती", "बुरा समय", "बुरे दिन", "मुश्किल", "संघर्ष", "टूटकर", "पछता", "बीत जाएगा"] },
+  { key: "time", emoji: "⏳", en: "Wasting time", hi: "समय बर्बाद हो रहा", words: ["समय", "पल ", "पल-", " कल ", "कल का", "आज ", " आज", "अभी", "मिनट", "time", "जीवन"] },
+];
+
+export function moodsOf(x: { t: string; m?: string }): Mood[] {
+  // Match on the plain-Hindi meaning when there is one (the verse itself is often Urdu/Sanskrit/old Hindi).
+  const hay = ` ${x.m || x.t} `.toLowerCase();
+  return MOODS.filter((md) => md.words.some((w) => hay.includes(w.toLowerCase()))).map((md) => md.key);
+}
+
 /** Stable id from the text, so favourites survive list changes. */
 export function lineId(text: string) {
   let h = 5381;

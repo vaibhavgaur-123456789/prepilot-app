@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLang } from "@/i18n/server";
 import { Card, PageHeader } from "@/components/ui";
 import { InstallButton } from "@/components/InstallButton";
+import { BRAND } from "@/config/brand";
 
 export const metadata = { title: "Help" };
 
@@ -54,6 +55,19 @@ export default async function HelpPage() {
           <ol className="list-inside list-decimal space-y-1.5 text-sm">{s.steps.map((x) => <li key={x}>{x}</li>)}</ol>
         </Card>
       ))}
+      <Card className="flex items-center gap-4">
+        {BRAND.developer.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={BRAND.developer.photo} alt={BRAND.developer.name} width={72} height={72} className="h-[72px] w-[72px] shrink-0 rounded-full object-cover shadow-brand" />
+        ) : (
+          <span className="bg-grad shadow-brand grid h-[72px] w-[72px] shrink-0 place-items-center rounded-full text-2xl font-extrabold text-white" aria-hidden>{BRAND.developer.initials}</span>
+        )}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">{lang === "hi" ? "डेवलपर" : "Developer"}</p>
+          <p className="text-lg font-bold">{BRAND.developer.name}</p>
+          <p className="text-sm text-muted">{lang === "hi" ? `${BRAND.name} को भारत के विद्यार्थियों के लिए प्यार से बनाया।` : `Made ${BRAND.name} with love for students in India.`}</p>
+        </div>
+      </Card>
     </div>
   );
 }

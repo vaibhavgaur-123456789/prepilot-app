@@ -174,6 +174,7 @@ export function ruleBasedAnswer(text: string, c: CoachContext, uiLang?: string |
         : ["Start just one 25-minute block: tap ⏱ Timer and put your phone in another room. Starting is the hardest part.", "Tired? Pick an easy win like revision or the mistake book. A little beats nothing.", "Protect 7 hours of sleep. A tired brain retains less, and late-night sessions are often less effective.", "Focus on today's small target, not the whole syllabus. One topic = one win."];
       lines.push(pick(tips));
       lines.push(S(`You've kept a ${c.progress.streak}-day streak and studied ${formatMinutes(c.progress.weekMinutes)} in the last week. That's real progress.`, `आपने ${c.progress.streak} दिन लगातार पढ़ाई की है और पिछले हफ़्ते ${formatMinutes(c.progress.weekMinutes)} पढ़े। यह असली प्रगति है।`));
+      lines.push(S("Need a lift? Open ✨ Shayari and tap “Feeling low” for lines by Kabir, Rahim, Ghalib and more.", "हौसला चाहिए? ✨ शायरी खोलें और “मन नहीं लग रहा” दबाएँ: कबीर, रहीम, ग़ालिब और भी की पंक्तियाँ मिलेंगी।"));
       break;
     }
     case "PROGRESS": {

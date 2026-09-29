@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/client/api";
-import { lineId, LANG_LABEL, SHAYARI, type ShayariLang } from "@/content/shayari";
+import { lineId, LANG_LABEL, MOODS, moodsOf, SHAYARI, type Mood, type ShayariLang } from "@/content/shayari";
 import { useLang, useT } from "@/i18n/client";
 import { cx, inputClass } from "./ui";
 
@@ -25,6 +25,11 @@ function writeList(key: string, v: string[]) {
   } catch {
     /* storage unavailable */
   }
+}
+
+/** Only called from click handlers, never during render. */
+function randomOf<T>(arr: T[]): T | null {
+  return arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
 }
 
 const local = (): ShayariItem[] => SHAYARI.map((x) => ({ id: lineId(x.t), t: x.t, p: x.p, s: x.s ?? "", m: x.m ?? "", l: x.l }));
@@ -117,7 +122,7 @@ export function ShayariCard({ className }: { className?: string }) {
 }
 
 /** The full collection: filter by language, poet, search or favourites. */
-export function ShayariBrowser({ items, todayIndex }: { items: ShayariItem[]; todayIndex: number }) {
+export function ShayariBrowser({ items, todayIndex, initialMood = null }: { items: ShayariItem[]; todayIndex: number; initialMood?: Mood | null }) {
   const t = useT();
   const lang = useLang();
   const { favs, toggle } = useFavs();
@@ -126,15 +131,48 @@ export function ShayariBrowser({ items, todayIndex }: { items: ShayariItem[]; to
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [limit, setLimit] = useState(40);
+  const byMood = useMemo(() => new Map(items.map((x) => [x.id, moodsOf(x)])), [items]);
+  const inMood = (x: ShayariItem, md: Mood) => byMood.get(x.id)?.includes(md) ?? false;
+  const [mood, setMood] = useState<Mood | null>(initialMood);
+  // The first pick for a mood opened from a link is deterministic (no randomness during render).
+  const [pick, setPick] = useState<ShayariItem | null>(() => (initialMood ? items.find((x) => inMood(x, initialMood)) ?? null : null));
+  function chooseMood(md: Mood | null) {
+    setMood(md);
+    if (!md) return setPick(null);
+    const pool = items.filter((x) => inMood(x, md) && x.id !== pick?.id);
+    setPick(randomOf(pool));
+  }
 
   const poets = useMemo(() => [...new Set(items.map((x) => x.p))].sort((a, b) => a.localeCompare(b)), [items]);
   const langs = useMemo(() => [...new Set(items.map((x) => x.l))], [items]);
-  const list = items.filter((x) => (filter === "all" ? true : filter === "fav" ? favs.includes(x.id) : x.l === filter) && (!poet || x.p === poet) && (!q || `${x.t} ${x.p} ${x.m}`.toLowerCase().includes(q.toLowerCase())));
+  const list = items.filter((x) => (!mood || inMood(x, mood)) && (filter === "all" ? true : filter === "fav" ? favs.includes(x.id) : x.l === filter) && (!poet || x.p === poet) && (!q || `${x.t} ${x.p} ${x.m}`.toLowerCase().includes(q.toLowerCase())));
   const today = items.length ? items[todayIndex % items.length] : null;
+  const moodInfo = MOODS.find((m) => m.key === mood);
 
   return (
     <div className="space-y-4">
-      {today && (
+      <section aria-label={t("shayari.howFeel")}>
+        <p className="mb-2 text-sm font-semibold">{t("shayari.howFeel")}</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {MOODS.map((m) => (
+            <button key={m.key} type="button" aria-pressed={mood === m.key} onClick={() => chooseMood(mood === m.key ? null : m.key)} className={cx("press flex min-h-12 items-center gap-2 rounded-2xl border px-3 text-left text-sm font-semibold", mood === m.key ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface")}>
+              <span className="text-xl" aria-hidden>{m.emoji}</span>{m[lang]}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {moodInfo && pick && (
+        <section className="animate-in rounded-3xl border-2 border-primary bg-surface p-5" aria-live="polite">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">{moodInfo.emoji} {t("shayari.forMood")}: {moodInfo[lang]}</p>
+          <div className="mt-2"><Verse x={pick} big /></div>
+          <p className="mt-2 text-sm font-semibold text-primary">— {pick.p}{pick.s ? <span className="font-normal text-muted"> · {pick.s}</span> : null}</p>
+          {pick.m && <p className="mt-2 rounded-xl bg-surface-2 p-2 text-sm">{pick.m}</p>}
+          <Actions x={pick} fav={favs.includes(pick.id)} onFav={() => toggle(pick.id)} onNext={() => chooseMood(moodInfo.key)} />
+        </section>
+      )}
+
+      {!mood && today && (
         <section className="bg-grad shadow-brand animate-in rounded-3xl p-5 text-white">
           <p className="text-xs font-semibold uppercase tracking-wider text-white/80">🌅 {t("shayari.today")}</p>
           <div className="mt-2"><Verse x={today} big /></div>
