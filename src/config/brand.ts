@@ -3,7 +3,7 @@ export const BRAND = {
   name: "RozPadh",
   tagline: "Study every day. Grow every day.",
   description:
-    "An exam-preparation operating system: plan, study, track, test, analyze, revise and adapt.",
+    "Study tracker for students: daily plan, study timer, paper timer, attendance, alarms, revision and shayari.",
   themeColor: "#2f5bea",
   supportEmail: "support@preppilot.example",
 } as const;
