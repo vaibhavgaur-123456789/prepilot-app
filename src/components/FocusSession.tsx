@@ -52,6 +52,8 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
   const [result, setResult] = useState<Result>(null);
   const [queued, setQueued] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [breakMin, setBreakMin] = useState(BREAK_MIN);
+  const [savedMinutes, setSavedMinutes] = useState(0);
   const wakeLock = useRef<{ release: () => Promise<void> } | null>(null);
 
   // Resume a session already running for this task (after reload / offline). The timer lives in
@@ -90,7 +92,7 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
   const brk = now ? breakMs(t, now) : t.accumulatedBreak;
   const plannedMs = t.plannedMinutes * 60_000;
   const remaining = plannedMs - act;
-  const breakLeft = BREAK_MIN * 60_000 - (t.phase === "break" && t.segmentStart && now ? now - t.segmentStart : 0);
+  const breakLeft = breakMin * 60_000 - (t.phase === "break" && t.segmentStart && now ? now - t.segmentStart : 0);
 
   async function start(modeOverride?: "TIMER" | "STOPWATCH") {
     const m = modeOverride ?? mode;
@@ -140,6 +142,7 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
     };
     try {
       const res = await sendOrQueue<Result>("/api/v1/sessions", payload);
+      setSavedMinutes(Math.round(payload.data.activeSeconds / 60));
       t.reset();
       if (res === null) setQueued(true);
       setResult(res);
@@ -163,6 +166,13 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
             {(["TIMER", "STOPWATCH"] as const).map((m) => (
               <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className={cx("min-h-11 rounded-xl border text-sm font-semibold", mode === m ? "border-primary bg-primary-soft text-primary" : "border-border")}>
                 {m === "TIMER" ? tt("focus.countdown") : tt("focus.stopwatch")}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5" aria-label="Pomodoro">
+            {([[25, 5], [50, 10], [90, 15]] as const).map(([work, rest]) => (
+              <button key={work} type="button" aria-pressed={mode === "TIMER" && minutes === work && breakMin === rest} onClick={() => { setMode("TIMER"); setMinutes(work); setBreakMin(rest); }} className={cx("rounded-full border px-3 py-1.5 text-sm font-semibold", mode === "TIMER" && minutes === work && breakMin === rest ? "border-primary bg-primary-soft text-primary" : "border-border")}>
+                🍅 {work} + {rest} {tt("common.min")}
               </button>
             ))}
           </div>
@@ -267,8 +277,9 @@ export function FocusSession({ task, autoStart = false }: { task: TaskInfo; auto
 
   return (
     <div className="mx-auto max-w-lg space-y-4 px-4 py-10 text-center">
-      <p className="animate-pop text-6xl">✅</p>
+      <p className="animate-pop text-6xl">{savedMinutes >= 25 ? "🌳" : savedMinutes >= 10 ? "🌱" : "✅"}</p>
       <h1 className="text-2xl font-bold">{tt("focus.saved")}</h1>
+      {savedMinutes >= 10 && <p className="text-sm">{savedMinutes >= 25 ? tt("garden.grewTree") : tt("garden.grewSapling")} <Link href="/garden" className="font-semibold text-primary underline">{tt("garden.see")}</Link></p>}
       {queued && <Alert tone="warning">You&apos;re offline. This session is saved on your device and will sync automatically.</Alert>}
       {result && (
         <Card className="space-y-3 text-left">

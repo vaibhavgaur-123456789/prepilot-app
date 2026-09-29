@@ -9,6 +9,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin" className="font-bold">RozPadh Admin</Link>
         <Link href="/admin/feedback" className="text-muted">Complaints</Link>
         <Link href="/admin/shayari" className="text-muted">Shayari</Link>
+        <Link href="/admin/events" className="text-muted">Exam calendar</Link>
         <Link href="/" className="text-muted">← Back to app</Link>
       </nav>
       {children}

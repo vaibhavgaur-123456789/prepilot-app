@@ -61,6 +61,92 @@ model User {
   paperLogs         PaperLog[]
   classesTaught     Classroom[]       @relation("ClassTeacher")
   classMemberships  ClassMember[]
+  groupsOwned       StudyGroup[]      @relation("GroupOwner")
+  groupMemberships  GroupMember[]
+  parentLink        ParentLink?
+  challenges        StudyChallenge[]
+  flashcards        Flashcard[]
+  referralCode      String?           @unique // invite code, created on first use
+  referredById      String?                   // who invited this student
+}
+
+/// Friends studying together: members see each other's study time and who is studying right now.
+model StudyGroup {
+  id        String        @id @default(cuid())
+  ownerId   String
+  name      String
+  code      String        @unique
+  createdAt DateTime      @default(now())
+  owner     User          @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members   GroupMember[]
+
+  @@index([ownerId])
+}
+
+model GroupMember {
+  id       String     @id @default(cuid())
+  groupId  String
+  userId   String
+  joinedAt DateTime   @default(now())
+  group    StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
+/// A private read-only link a student can send to parents (weekly study report). Revocable.
+model ParentLink {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  token     String   @unique
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// "30 days × N minutes" challenge. Progress is computed from DailyStat.
+model StudyChallenge {
+  id           String    @id @default(cuid())
+  userId       String
+  dailyMinutes Int
+  startDate    String    // dayKey
+  days         Int       @default(30)
+  endedAt      DateTime? // set when the student gives up early
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Exam calendar entry added by the admin from official notices (form dates, admit card, exam day…).
+model ExamEvent {
+  id        String   @id @default(cuid())
+  title     String
+  examName  String   @default("") // e.g. "SSC CGL"; empty = relevant to everyone
+  kind      String   @default("OTHER") // FORM_START | LAST_DATE | ADMIT_CARD | EXAM | RESULT | OTHER
+  date      String   // dayKey
+  link      String   @default("") // official notice URL
+  createdAt DateTime @default(now())
+
+  @@index([date])
+}
+
+/// Student's own flashcards with spaced repetition.
+model Flashcard {
+  id           String   @id @default(cuid())
+  userId       String
+  deck         String   @default("")
+  front        String
+  back         String
+  dueOn        String   // dayKey
+  intervalDays Int      @default(0)
+  ease         Float    @default(2.5)
+  reps         Int      @default(0)
+  lapses       Int      @default(0)
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dueOn])
 }
 
 /// A teacher's class/batch. Students join with the code and then share their study time with the teacher.

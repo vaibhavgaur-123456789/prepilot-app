@@ -10,6 +10,9 @@ import { Badge, Card, CardTitle, PageHeader, Progress, Stat } from "@/components
 import { SettingsForm } from "@/components/SettingsForm";
 import { JoinClass } from "@/components/Teacher";
 import { myClasses } from "@/server/services/classroom.service";
+import { getParentLink } from "@/server/services/parent.service";
+import { myReferral } from "@/server/services/referral.service";
+import { InviteCard, ParentLinkCard } from "@/components/Social";
 
 export const metadata = { title: "Profile" };
 
@@ -18,13 +21,15 @@ const levelName: Record<string, string> = { EXAM: "Exam goal", MONTHLY: "This mo
 export default async function ProfilePage() {
   const user = await requireStudent();
   const ctx = await getStudentContext(user.id);
-  const [goals, xp, prefs, catalog, mine, classes] = await Promise.all([
+  const [goals, xp, prefs, catalog, mine, classes, parentLink, referral] = await Promise.all([
     listGoals(user.id),
     xpSummary(user.id, ctx.today),
     getPrefs(user.id),
     prisma.achievement.findMany({ orderBy: { xpReward: "asc" } }),
     prisma.userAchievement.findMany({ where: { userId: user.id } }),
     myClasses(user.id),
+    getParentLink(user.id),
+    myReferral(user.id),
   ]);
   const unlocked = new Map(mine.map((m) => [m.achievementId, m.unlockedAt]));
 
@@ -74,6 +79,8 @@ export default async function ProfilePage() {
       </Card>
 
       <JoinClass classes={classes} />
+      <div id="parents" className="scroll-mt-20"><ParentLinkCard token={parentLink?.token ?? null} /></div>
+      <div id="invite" className="scroll-mt-20"><InviteCard {...referral} /></div>
 
       <SettingsForm
         profile={{

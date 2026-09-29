@@ -41,13 +41,13 @@ export default async function HomePage() {
       <div className="stagger grid grid-cols-4 gap-2">
         {[
           { href: "/study/session/free?quick=1", icon: "⏱", label: t("quick.timer"), primary: true },
-          { href: "/attendance", icon: "📅", label: t("quick.attendance") },
-          { href: "/alarms", icon: "⏰", label: t("quick.alarm") },
-          { href: "/syllabus", icon: "📚", label: t("quick.syllabus") },
           { href: "/tests", icon: "📝", label: t("paper.title") },
+          { href: "/groups", icon: "👥", label: t("groups.short") },
+          { href: "/challenge", icon: "🏆", label: t("challenge.short") },
+          { href: "/cards", icon: "🃏", label: t("cards.short") },
+          { href: "/attendance", icon: "📅", label: t("quick.attendance") },
           { href: "/shayari", icon: "✨", label: t("quick.shayari") },
-          { href: "/coach", icon: "🤖", label: t("nav.coach") },
-          { href: "/help", icon: "❓", label: t("nav.howto") },
+          { href: "/more", icon: "⋯", label: t("more.short") },
         ].map((q) => (
           <Link key={q.href} href={q.href} className={`press lift flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border p-2 text-center text-xs font-semibold ${q.primary ? "bg-grad animate-pulse-ring border-transparent" : "border-border bg-surface"}`}>
             <span className="text-2xl" aria-hidden>{q.icon}</span>

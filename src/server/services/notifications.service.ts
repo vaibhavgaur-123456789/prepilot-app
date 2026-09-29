@@ -1,6 +1,7 @@
 import { prisma, isUniqueViolation } from "@/server/db";
 import { addDays, dayKey, diffDays, localMinutes, toMinutes, weekdayIndex } from "@/lib/engine/dates";
 import { sendPush } from "./push.service";
+import { eventMatches } from "./calendar.service";
 
 function inQuiet(nowMin: number, start: string, end: string) {
   const s = toMinutes(start);
@@ -43,9 +44,16 @@ export async function generateNotifications(userId: string, now = new Date()) {
   const upcoming = tasks.find((t) => t.startTime && toMinutes(t.startTime) - nowMin <= 15 && toMinutes(t.startTime) - nowMin >= -10);
   if (upcoming) candidates.push({ type: "STUDY", title: `Up next: ${upcoming.title}`, body: `${upcoming.plannedMinutes} min${upcoming.questionTarget ? ` · ${upcoming.questionTarget} questions` : ""}. Start when you're ready.`, href: `/study/session/${upcoming.id}`, enabled: prefs.studyReminder });
   if (dueRevisions > 0 && nowMin >= 9 * 60) candidates.push({ type: "REVISION", title: `${dueRevisions} revision${dueRevisions === 1 ? "" : "s"} due`, body: "Short, on-time revisions keep what you've learned.", href: "/study/revision", enabled: prefs.revisionReminder });
-  if (tasks.some((t) => t.type === "MOCK")) candidates.push({ type: "MOCK", title: "Mock test scheduled today", body: "Pick a quiet slot and attempt it under exam conditions.", href: "/tests", enabled: prefs.mockReminder });
   if (yesterdayMissed > 0) candidates.push({ type: "MISSED_TASK", title: "Yesterday's unfinished work is handled", body: `${yesterdayMissed} task${yesterdayMissed === 1 ? " was" : "s were"} rescheduled or reduced, with nothing dropped silently. See what changed.`, href: "/plan", enabled: prefs.missedTask });
   if (COUNTDOWN_MILESTONES.includes(daysLeft)) candidates.push({ type: "COUNTDOWN", title: `${daysLeft} day${daysLeft === 1 ? "" : "s"} to your exam`, body: "Your plan is shifting towards revision and mocks.", href: "/analytics", enabled: prefs.examCountdown });
+  // Official exam dates (form deadline, admit card, exam day) added by the admin: remind 3 days and 1 day before.
+  const soon = await prisma.examEvent.findMany({ where: { date: { in: [addDays(today, 1), addDays(today, 3)] } } });
+  const exam = await prisma.exam.findUnique({ where: { id: user.profile.examId }, select: { name: true, shortName: true } });
+  const ev = soon.find((e) => eventMatches(e.examName, exam));
+  if (ev && nowMin >= 8 * 60) {
+    const inDays = diffDays(today, ev.date);
+    candidates.push({ type: "EXAM_EVENT", title: `📅 ${ev.title}`, body: inDays === 1 ? "Tomorrow. Check the official notice and keep documents ready." : `In ${inDays} days. Check the official notice.`, href: "/calendar", enabled: prefs.examCountdown });
+  }
   if (weekdayIndex(today) === 0 && nowMin >= 8 * 60) candidates.push({ type: "WEEKLY", title: "Your weekly report is ready", body: "See last week's hours, accuracy and next week's priorities.", href: "/review/weekly", enabled: prefs.weeklyReview });
 
   const keyOf = (type: string) => `${userId}:${type}:${today}`;

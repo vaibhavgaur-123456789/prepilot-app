@@ -12,7 +12,7 @@ const MAX_CLASSES_PER_STUDENT = 5;
 // No 0/O or 1/I/L, so codes are easy to read out in class.
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
-function newCode() {
+export function newCode() {
   return Array.from({ length: 6 }, () => CODE_CHARS[randomInt(CODE_CHARS.length)]).join("");
 }
 export const normalizeCode = (c: string) => c.toUpperCase().replace(/[^A-Z0-9]/g, "");

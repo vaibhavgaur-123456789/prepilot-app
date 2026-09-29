@@ -1,4 +1,4 @@
-﻿@AGENTS.md
+@AGENTS.md
 
 # RozPadh (formerly PrepPilot): guide for any AI/developer session
 
@@ -9,7 +9,7 @@ Read this first. The owner is not a programmer and usually writes in Hinglish (H
 - Code: https://github.com/vaibhavgaur-123456789/prepilot-app
 - Database: Supabase Postgres (Mumbai). Production env vars are in Vercel, with a local copy in the gitignored `.env.vercel`.
 - Owner/admin email: set in the `ADMIN_EMAILS` env var.
-- Scheduler: Supabase `pg_cron` + `pg_net` jobs `preppilot-alarms` (every 5 min â†’ `/api/v1/cron/alarms`) and `preppilot-notifications` (hourly). Both send `Authorization: Bearer $CRON_SECRET`. If CRON_SECRET or the domain changes, re-create both jobs (`select cron.schedule(...)` replaces a job by name). View them in Supabase â†’ Database â†’ Cron Jobs.
+- Scheduler: Supabase `pg_cron` + `pg_net` jobs `preppilot-alarms` (every 5 min → `/api/v1/cron/alarms`) and `preppilot-notifications` (hourly). Both send `Authorization: Bearer $CRON_SECRET`. If CRON_SECRET or the domain changes, re-create both jobs (`select cron.schedule(...)` replaces a job by name). View them in Supabase → Database → Cron Jobs.
 - Server region: `bom1` (Mumbai, set in vercel.json), next to the Supabase database.
 
 ## What this is
@@ -17,6 +17,7 @@ RozPadh is a study-tracking app for Indian students (SSC, Railway, Banking, boar
 - There are NO in-app MCQ tests any more (owner's decision, Sep 2026). The Tests tab (`/tests`) is a **Paper timer**: students solve printed/PDF papers and the app only times them (`PaperLog` table, `paper.service.ts`, `PaperTimer.tsx`). The old Mock/Question tables and `mock.service.ts` remain in the code but the planner no longer schedules mocks.
 - **Shayari**: `src/content/shayari.ts` holds real lines by named public-domain poets only (never AI-written; the owner insists). Admin can add more at `/admin/shayari` (`Shayari` table). A random line shows after every study session and paper (`ShayariCard`).
 - **Teacher dashboard** (`/teacher`, needs sign-in only, no onboarding): a teacher creates a class and gets a 6-letter code; students join from Profile or `/join/<code>`. Teachers see only study minutes, days studied, streak and paper count (`Classroom`/`ClassMember` tables, `classroom.service.ts`, `components/Teacher.tsx`). Possible paid B2B feature later.
+- **Engagement features (Sep 2026)**: study groups with live "studying now" + weekly leaderboard (`group.service.ts`, `/groups`, join link `/groups/join/<code>`); parent report link (`ParentLink`, public `/p/<token>`); invite links (`/r/<code>` sets a cookie, XP to both on onboarding, `referral.service.ts`); 7/21/30-day challenge (`challenge.service.ts`); exam calendar entered by admin at `/admin/events` with reminders in the notification sweep; flashcards with SM-2 spacing (`lib/engine/flashcards.ts`); Pomodoro presets + Forest-style garden computed from sessions (`garden.service.ts`); `/more` lists every tool.
 - **Play Store (TWA via PWABuilder)**: `/.well-known/assetlinks.json` is served from `src/config/android.ts`; fill in the package name and SHA-256 fingerprints once the owner generates the package. Privacy policy is at `/privacy`.
 Core idea: measure **PLAN vs ACTUAL vs RESULT** and adapt the next day's plan from the gap.
 Product rules: `PRODUCT_SPEC.md`. Design: `ARCHITECTURE.md`. Data: `DATABASE_SCHEMA.md`. Going live: `DEPLOY.md`.
@@ -46,18 +47,18 @@ Honesty rules (never break these):
 If `node`/`npm`/`git` aren't found, prepend to PATH:
 `C:\Users\hp\AppData\Local\Programs\node-v24.21.0-win-x64` and `C:\Users\hp\AppData\Local\Programs\MinGit\cmd`.
 - `npm run dev`: local app on http://localhost:3000 (demo login: demo@preppilot.app / demo-pass-2026, admin: admin@preppilot.app / admin-pass-2026)
-- `npm run typecheck` Â· `npm run lint` Â· `npm test` (the full suite takes ~2 min, so run it in the background) Â· `npx next build`
+- `npm run typecheck` · `npm run lint` · `npm test` (the full suite takes ~2 min, so run it in the background) · `npx next build`
 - `npx prisma migrate dev --name <change>` after editing `prisma/schema.prisma` (local). Production picks up schema changes automatically on the next deploy (`prisma db push`).
 - If `prisma generate` fails with EPERM on Windows, stop the dev server first.
 
 ## Workflow rules
 - Before finishing any change: typecheck + lint + relevant tests must pass. Verify UI changes in a browser.
 - Commit with a clear message. **Pushing to `main` on GitHub deploys to production automatically (Vercel)**, so push only working code, and tell the owner when you push.
-- Never commit `.env*` files (except `.env.example`) or `*.db`. Secrets live in Vercel â†’ Settings â†’ Environment Variables.
+- Never commit `.env*` files (except `.env.example`) or `*.db`. Secrets live in Vercel → Settings → Environment Variables.
 - This project must stay separate from the owner's other website repository ("website-builder-site"). Never push PrepPilot there.
 
 ## Known gaps / ideas for later
 - Onboarding screens and engine-generated explanations are still English-only.
-- More exams: add them via Admin â†’ "Add a new exam" (no code needed), or seed them in `prisma/seed-data/exams.ts`.
+- More exams: add them via Admin → "Add a new exam" (no code needed), or seed them in `prisma/seed-data/exams.ts`.
 - Payments are not integrated (the `Subscription` table and `src/server/entitlements.ts` exist).
 

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { verifyToken, SESSION_COOKIE } from "@/server/auth/session";
 
 // Pages anyone (and search engines) can open without signing in.
-const PUBLIC = ["/welcome", "/login", "/signup", "/offline", "/robots.txt", "/sitemap.xml", "/opengraph-image", "/twitter-image", "/.well-known", "/privacy"];
+const PUBLIC = ["/welcome", "/login", "/signup", "/offline", "/robots.txt", "/sitemap.xml", "/opengraph-image", "/twitter-image", "/.well-known", "/privacy", "/r", "/p"];
 
 /** Signed-out visitors: "/" shows the public landing page; other private pages go to /login. */
 export async function proxy(req: NextRequest) {

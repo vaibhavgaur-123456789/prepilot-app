@@ -6,6 +6,7 @@ import { cascadeGoals } from "@/lib/engine/goals";
 import { toJson } from "@/lib/json";
 import type { OnboardingInput } from "@/lib/validation/schemas";
 import { trackEvent } from "./context";
+import { rewardReferral } from "./referral.service";
 import { leafTopics } from "./learning.service";
 import { ensureDayPlan } from "./planner.service";
 import { refreshReadiness } from "./readiness.service";
@@ -188,5 +189,6 @@ export async function completeOnboarding(userId: string, input: OnboardingInput,
   await prisma.studentProfile.update({ where: { userId }, data: { baseline: toJson(baseline) } });
   const plan = await ensureDayPlan(userId, { now, force: true });
   await trackEvent(userId, switching ? "exam_changed" : "onboarding_complete", { exam: exam.slug, daysLeft });
+  if (!switching) await rewardReferral(userId, now);
   return { baseline, readiness, plan };
 }

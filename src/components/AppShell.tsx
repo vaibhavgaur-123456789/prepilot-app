@@ -67,7 +67,7 @@ export function AppShell({ children, unread, isAdmin }: { children: React.ReactN
           <Link href="/coach" className={cx("mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium", active("/coach") ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text")}>
             <ChatIcon /> {t("nav.coach")}
           </Link>
-          {([["/attendance", "📅", "quick.attendance"], ["/alarms", "⏰", "quick.alarm"], ["/syllabus", "📚", "quick.syllabus"], ["/shayari", "✨", "nav.shayari"], ["/help", "❓", "nav.howto"]] as const).map(([href, icon, key]) => (
+          {([["/groups", "👥", "groups.short"], ["/challenge", "🏆", "challenge.short"], ["/cards", "🃏", "cards.short"], ["/garden", "🌳", "garden.title"], ["/attendance", "📅", "quick.attendance"], ["/calendar", "🗓️", "cal.title"], ["/shayari", "✨", "nav.shayari"], ["/more", "⋯", "more.short"]] as const).map(([href, icon, key]) => (
             <Link key={href} href={href} className={cx("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium", active(href) ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text")}>
               <span className="w-[22px] text-center" aria-hidden>{icon}</span> {t(key)}
             </Link>
